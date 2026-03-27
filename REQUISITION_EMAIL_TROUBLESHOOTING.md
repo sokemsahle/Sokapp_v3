@@ -130,7 +130,7 @@ Verify your `.env` file has these values:
 
 ```env
 # Email configurations
-BREVO_API_KEY=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
+BREVO_API_KEY=your_brevo_api_key_here
 EMAIL_FROM=noreply@sokapp.online
 BREVO_SENDER_EMAIL=noreply@sokapp.online
 

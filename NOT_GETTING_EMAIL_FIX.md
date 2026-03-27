@@ -62,7 +62,7 @@ WHERE rr.role_type = 'reviewer' AND rr.is_active = TRUE;
 1. Open `Backend/.env`
 2. Verify these lines exist:
 ```env
-BREVO_API_KEY=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
+BREVO_API_KEY=your_brevo_api_key_here
 EMAIL_FROM=noreply@sokapp.online
 ```
 3. Restart backend server
