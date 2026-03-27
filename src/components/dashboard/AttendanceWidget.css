@@ -1,0 +1,385 @@
+/* Attendance Tracker Widget Styles */
+
+.attendance-widget {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-left: 4px solid var(--primary);
+    transition: all 0.3s ease;
+}
+
+.attendance-widget:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+/* Header */
+.attendance-widget-header {
+    margin-bottom: 20px;
+}
+
+.attendance-widget-header h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.attendance-widget-header h3 i {
+    color: var(--primary);
+    font-size: 1.8rem;
+}
+
+.attendance-widget-welcome {
+    font-size: 0.9rem;
+    color: var(--dark-gray);
+    margin: 0;
+}
+
+/* Live Clock Display */
+.live-clock-display {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: var(--white);
+    box-shadow: 0 4px 8px var(--shadow-md);
+}
+
+.live-time {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+}
+
+.live-date {
+    font-size: 0.9rem;
+    opacity: 0.95;
+    font-weight: 500;
+}
+
+/* Status Messages */
+.attendance-status-container {
+    margin-bottom: 16px;
+}
+
+.status-badge-clocked-in {
+    background: var(--light-success);
+    border: 1px solid var(--success);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+}
+
+.status-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.status-text {
+    color: var(--success);
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-text i {
+    font-size: 1.2rem;
+}
+
+.duration-display {
+    color: var(--success);
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    background: var(--light-success);
+    padding: 4px 12px;
+    border-radius: 6px;
+}
+
+.ip-info {
+    color: var(--success);
+    font-size: 0.75rem;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ip-info i {
+    font-size: 0.9rem;
+}
+
+.status-badge-not-clocked-in {
+    background: var(--warning);
+    border: 1px solid var(--warning);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+}
+
+.status-badge-not-clocked-in .status-text {
+    color: var(--dark);
+}
+
+.status-badge-not-clocked-in p {
+    color: var(--dark);
+    font-size: 0.8rem;
+    margin: 4px 0 0 0;
+}
+
+/* Error Message */
+.error-message {
+    background: var(--light-danger);
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.error-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.error-icon {
+    color: var(--danger);
+    font-size: 1.2rem;
+    margin-top: 2px;
+}
+
+.error-text {
+    flex: 1;
+}
+
+.error-text p {
+    color: var(--danger);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin: 0 0 4px 0;
+}
+
+.error-hint {
+    color: var(--danger);
+    font-size: 0.75rem;
+    margin: 0;
+    opacity: 0.8;
+}
+
+/* Success Message */
+.success-message {
+    background: var(--light-success);
+    border: 1px solid var(--success);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.success-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.success-icon {
+    color: var(--success);
+    font-size: 1.2rem;
+}
+
+.success-text {
+    color: var(--success);
+    font-size: 0.9rem;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Action Button */
+.clock-action-button {
+    width: 100%;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.clock-action-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.clock-action-button:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px var(--shadow-lg);
+}
+
+.clock-action-button:not(:disabled):active {
+    transform: translateY(0);
+}
+
+.clock-in-button {
+    background: linear-gradient(135deg, var(--success) 0%, var(--success) 100%);
+    color: var(--white);
+}
+
+.clock-in-button:not(:disabled):hover {
+    filter: brightness(90%);
+}
+
+.clock-out-button {
+    background: linear-gradient(135deg, var(--danger) 0%, var(--danger) 100%);
+    color: var(--white);
+}
+
+.clock-out-button:not(:disabled):hover {
+    filter: brightness(90%);
+}
+
+.button-icon {
+    font-size: 1.2rem;
+}
+
+.loading-spinner {
+    font-size: 1.2rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Additional Info */
+.attendance-widget-footer {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--light);
+    text-align: center;
+}
+
+.footer-info {
+    color: var(--dark-gray);
+    font-size: 0.75rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.footer-info i {
+    font-size: 0.9rem;
+}
+
+/* Dark Mode Support */
+body.dark .attendance-widget {
+    background: var(--dark);
+    border-color: var(--grey);
+}
+
+body.dark .attendance-widget-header h3 {
+    color: var(--white);
+}
+
+body.dark .attendance-widget-welcome {
+    color: var(--light);
+}
+
+body.dark .live-clock-display {
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+}
+
+body.dark .status-badge-clocked-in {
+    background: rgba(131, 29, 186, 0.2);
+    border-color: var(--success);
+}
+
+body.dark .status-badge-not-clocked-in {
+    background: rgba(255, 193, 7, 0.2);
+    border-color: var(--warning);
+}
+
+body.dark .error-message {
+    background: rgba(255, 75, 92, 0.2);
+    border-color: var(--danger);
+}
+
+body.dark .success-message {
+    background: rgba(131, 29, 186, 0.2);
+    border-color: var(--success);
+}
+
+body.dark .footer-info {
+    color: var(--grey);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .attendance-widget {
+        padding: 16px;
+    }
+
+    .attendance-widget-header h3 {
+        font-size: 1.2rem;
+    }
+
+    .live-time {
+        font-size: 2rem;
+    }
+
+    .live-date {
+        font-size: 0.8rem;
+    }
+
+    .status-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .duration-display {
+        font-size: 0.75rem;
+    }
+
+    .clock-action-button {
+        padding: 12px 16px;
+        font-size: 0.95rem;
+    }
+}

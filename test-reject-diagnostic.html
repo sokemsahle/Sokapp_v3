@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Request Diagnostic Tool</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        h1 {
+            color: #1a1a2e;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .status-pending { background-color: #fff3cd; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+        .status-approved { background-color: #d4edda; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #155724; }
+        .status-rejected { background-color: #f8d7da; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #721c24; }
+        .status-partially_approved { background-color: #ffe5d0; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #8b4513; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.reject-btn {
+            background-color: #dc3545;
+        }
+        button.reject-btn:hover {
+            background-color: #c82333;
+        }
+        button.approve-btn {
+            background-color: #28a745;
+        }
+        button.approve-btn:hover {
+            background-color: #218838;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Inventory Request Diagnostic Tool</h1>
+    
+    <div class="section">
+        <h2>Step 1: Check Pending Requests</h2>
+        <button onclick="loadPendingRequests()">🔄 Load Pending Requests</button>
+        <div id="pendingResults"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Step 2: Test Rejection</h2>
+        <p>Enter a request ID to test rejection:</p>
+        <input type="number" id="testRequestId" placeholder="Request ID" style="padding: 8px; width: 100px; margin-right: 10px;">
+        <input type="text" id="rejectionReason" placeholder="Rejection reason" style="padding: 8px; width: 300px; margin-right: 10px;">
+        <button class="reject-btn" onclick="testReject()">Test Reject</button>
+        <div id="rejectResult"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Step 3: All Requests Status</h2>
+        <button onclick="loadAllRequests()">📋 View All Requests</button>
+        <div id="allRequestsResults"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000';
+
+        async function loadPendingRequests() {
+            const resultsDiv = document.getElementById('pendingResults');
+            resultsDiv.innerHTML = '<div class="loading">Loading...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/inventory/requests/pending`);
+                const data = await response.json();
+                
+                if (data.success && data.requests.length > 0) {
+                    let html = '<table><thead><tr><th>ID</th><th>Item</th><th>Requestor</th><th>Qty</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+                    data.requests.forEach(req => {
+                        html += `
+                            <tr>
+                                <td>#${req.id}</td>
+                                <td>${req.item_name || 'N/A'}</td>
+                                <td>${req.requestor_name} (${req.requestor_email})</td>
+                                <td>${req.quantity_requested}</td>
+                                <td><span class="status-pending">PENDING</span></td>
+                                <td>
+                                    <button class="reject-btn" onclick="quickReject(${req.id})">Reject</button>
+                                    <button class="approve-btn" onclick="quickApprove(${req.id})">Approve</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    html += '</tbody></table>';
+                    resultsDiv.innerHTML = `<div class="success">✅ Found ${data.requests.length} pending request(s)</div>` + html;
+                } else {
+                    resultsDiv.innerHTML = '<div class="error">❌ No pending requests found. Create a request first or check if all have been processed.</div>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Error: ${error.message}<br><br>Make sure backend server is running on port 5000</div>`;
+            }
+        }
+
+        async function testReject() {
+            const requestId = document.getElementById('testRequestId').value;
+            const reason = document.getElementById('rejectionReason').value || 'Testing rejection';
+            const resultDiv = document.getElementById('rejectResult');
+            
+            if (!requestId) {
+                resultDiv.innerHTML = '<div class="error">❌ Please enter a request ID</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="loading">Testing rejection...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/inventory/request/${requestId}/reject`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rejected_by: 1,
+                        rejected_by_name: 'Test User',
+                        rejection_reason: reason
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = `<div class="success">✅ ${data.message}</div>`;
+                    setTimeout(() => loadPendingRequests(), 1000);
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ ${data.message || 'Failed to reject'}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function quickReject(id) {
+            if (!confirm(`Reject request #${id}?`)) return;
+            document.getElementById('testRequestId').value = id;
+            document.getElementById('rejectionReason').value = 'Not approved at this time';
+            await testReject();
+        }
+
+        async function quickApprove(id) {
+            const resultDiv = document.getElementById('rejectResult');
+            resultDiv.innerHTML = '<div class="loading">Testing approval...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/inventory/request/${id}/approve`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        approved_by: 1,
+                        approved_by_name: 'Test User',
+                        quantity_approved: 10
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = `<div class="success">✅ ${data.message}</div>`;
+                    setTimeout(() => loadPendingRequests(), 1000);
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ ${data.message || 'Failed to approve'}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function loadAllRequests() {
+            const resultsDiv = document.getElementById('allRequestsResults');
+            resultsDiv.innerHTML = '<div class="loading">Loading...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/inventory/requests`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const requests = data.requests || data.data || [];
+                    let html = '<table><thead><tr><th>ID</th><th>Item</th><th>Requestor</th><th>Status</th><th>Date</th></tr></thead><tbody>';
+                    
+                    requests.forEach(req => {
+                        let statusClass = '';
+                        switch(req.status) {
+                            case 'pending': statusClass = 'status-pending'; break;
+                            case 'approved': statusClass = 'status-approved'; break;
+                            case 'rejected': statusClass = 'status-rejected'; break;
+                            case 'partially_approved': statusClass = 'status-partially_approved'; break;
+                        }
+                        
+                        html += `
+                            <tr>
+                                <td>#${req.id}</td>
+                                <td>${req.item_name || 'N/A'}</td>
+                                <td>${req.requestor_name}</td>
+                                <td><span class="${statusClass}">${req.status.toUpperCase()}</span></td>
+                                <td>${new Date(req.created_at).toLocaleDateString()}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += '</tbody></table>';
+                    resultsDiv.innerHTML = `<div class="info">📊 Total requests: ${requests.length}</div>` + html;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-load pending requests on page load
+        window.onload = () => loadPendingRequests();
+    </script>
+</body>
+</html>

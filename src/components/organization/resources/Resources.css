@@ -1,0 +1,566 @@
+/* Resource Management Styles */
+:root {
+    --white: #ffffff;
+    --primary: #474fa8;
+    --light-primary: #d6d8ff;
+    --light: #f1e7ff;
+    --dark: #1c2237;
+    --danger: #ff4b5c;
+    --light-danger: #f8d7db;
+    --success: #831dba;
+    --light-success: #f2e7ff;
+    --warning: #ffc107;
+    --grey: #acacac;
+    --dark-gray: #aaaaaa;
+    --font-family: 'Poppins', sans-serif;
+    --image: invert(0%);
+}
+
+
+.resources-layout {
+    margin-top: 20px;
+}
+
+/* Tabs */
+.resources-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--white);
+    padding-bottom: 10px;
+}
+
+.tab-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--dark-gray);
+    transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+    background:var(--white);
+    color: var(--black);
+}
+
+.tab-button.active {
+    background: var(--primary-color, #4a90e2);
+    color: white;
+}
+
+.tab-button i {
+    font-size: 20px;
+}
+
+/* Resources Manager */
+.resources-manager h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.resources-manager h3 i {
+    color: var(--primary-color, #4a90e2);
+}
+
+/* Room Selector */
+.room-selector-panel {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.room-selector-panel label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--dark-gray);
+}
+
+.room-select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--light-primary);
+    border-radius: 6px;
+    font-size: 15px;
+    background: var(--white);
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.room-select:focus {
+    outline: none;
+    border-color: var(--primary-color, #4a90e2);
+}
+
+/* Form Panels */
+.resource-form-panel {
+    background: var(--white);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 25px;
+}
+
+.resource-form-panel h4 {
+    margin-bottom: 20px;
+    color: var(--dark-gray);
+    font-size: 18px;
+}
+
+.resource-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--dark-gray);
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+    padding: 12px;
+    border: 2px solid var(--light-primary);
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color, #4a90e2);
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* List Panels */
+.resource-list-panel {
+    background: var(--white);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.resource-list-panel h4 {
+    margin-bottom: 20px;
+    color: var(--dark-gray);
+    font-size: 18px;
+}
+
+/* Resource Grid */
+.resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Resource Card */
+.resource-card {
+    background: var(--white);
+    border: 2px solid var(--light-primary);
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.resource-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.resource-card.occupied {
+    border-left: 4px solid #ef4444;
+}
+
+.resource-card.available {
+    border-left: 4px solid #22c55e;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--light-primary);
+}
+
+.card-header h5 {
+    margin: 0;
+    color: var(--dark-gray);
+    font-size: 17px;
+}
+
+.capacity-badge {
+    background: var(--light-primary);
+    color: var(--primary);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-badge.available {
+    background: var(--light-success);
+    color: var(--success);
+}
+
+.status-badge.occupied {
+    background: var(--light-danger);
+    color: var(--danger);
+}
+
+.card-body {
+    margin-bottom: 15px;
+}
+
+.bed-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--dark-gray);
+    font-size: 14px;
+}
+
+.stat-item i {
+    font-size: 18px;
+    color: var(--dark-gray);
+}
+
+.stat-item.available {
+    color: var(--success);
+}
+
+.stat-item.available i {
+    color: var(--success);
+}
+
+.room-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--dark-gray);
+    font-size: 14px;
+}
+
+.room-info i {
+    font-size: 18px;
+    color: var(--primary);
+}
+
+.card-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding-top: 15px;
+    border-top: 1px solid var(--light-primary);
+}
+
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 18px;
+}
+
+.btn-icon.btn-edit {
+    background: var(--light-primary);
+    color: var(--primary);
+}
+
+.btn-icon.btn-edit:hover {
+    background: var(--primary-color, #1976d2);
+    color: var(--white);
+}
+
+.btn-icon.btn-delete {
+    background: var(--light-danger);
+    color: var(--danger);
+}
+
+.btn-icon.btn-delete:hover {
+    background: var(--danger-color, #dc2626);
+    color: var(--white);
+}
+
+.btn-icon.btn-maintenance {
+    background: var(--light-success);
+    color: var(--success);
+}
+
+.btn-icon.btn-maintenance:hover {
+    background: var(--success);
+    color: var(--white);
+}
+
+/* Fixed Assets Specific Styles */
+.asset-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.asset-title-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.category-badge {
+    background: var(--light-primary);
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.asset-code {
+    background: var(--light);
+    color: var(--dark-gray);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: monospace;
+}
+
+.asset-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--dark-gray);
+    font-size: 13px;
+}
+
+.detail-item i {
+    font-size: 16px;
+    color: var(--primary);
+    min-width: 18px;
+}
+
+.asset-status-badges {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.badge.status-available {
+    background: var(--light-success);
+    color: var(--success);
+}
+
+.badge.status-in-use {
+    background: var(--light-primary);
+    color: var(--primary);
+}
+
+.badge.status-maintenance {
+    background: var(--light-warning, #fff3cd);
+    color: var(--warning-color, #856404);
+}
+
+.badge.status-retired {
+    background: var(--light-gray, #e9ecef);
+    color: var(--dark-gray);
+}
+
+.badge.condition-excellent {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge.condition-good {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.badge.condition-fair {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge.condition-poor {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge.condition-damaged {
+    background: #721c24;
+    color: white;
+}
+
+.asset-value {
+    background: var(--light);
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+.value-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.value-item:last-child {
+    margin-bottom: 0;
+}
+
+.value-item .label {
+    color: var(--dark-gray);
+    font-weight: 500;
+}
+
+.value-item .value {
+    color: var(--dark);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.value-item.highlight .value {
+    color: var(--success);
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.maintenance-form {
+    background: var(--light-success);
+    border: 2px solid var(--success);
+}
+
+.maintenance-form h4 {
+    color: var(--success);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Loading and Messages */
+.loading-message,
+.no-data-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--dark-gray);
+}
+
+.no-data-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.no-data-message i {
+    font-size: 48px;
+    color: var(--dark-gray);
+}
+
+.no-data-message p {
+    margin: 0;
+    font-size: 15px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .resources-tabs {
+        flex-direction: column;
+    }
+
+    .tab-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .resource-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions button {
+        width: 100%;
+    }
+}

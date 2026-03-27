@@ -1,0 +1,434 @@
+/* Lookup Editor Styles */
+
+.lookup-editor-container {
+    padding: 24px;
+    background: var(--light-primary);
+    min-height: calc(100vh - 65px);
+    font-family: var(--font-family);
+}
+
+.lookup-editor-container h2 {
+    font-size: 36px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 8px;
+}
+
+.section-description {
+    font-size: 14px;
+    color: var(--dark-gray);
+    margin-bottom: 24px;
+}
+
+/* Lookup Layout */
+.lookup-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+/* Lookup Sidebar */
+.lookup-sidebar {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 24px;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+}
+
+.lookup-sidebar h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--grey);
+}
+
+.category-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.category-menu li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.category-menu li:not(.disabled):hover {
+    background: var(--light);
+}
+
+.category-menu li.active {
+    background: var(--primary);
+    color: var(--white);
+}
+
+.category-menu li.active i,
+.category-menu li.active span {
+    color: var(--white);
+}
+
+.category-menu li i {
+    font-size: 24px;
+    color: var(--primary);
+    min-width: 24px;
+}
+
+.category-menu li.active i {
+    color: var(--white);
+}
+
+.category-menu li span {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.category-menu li.active span {
+    color: var(--white);
+}
+
+/* Lookup Content */
+.lookup-content {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    min-height: 600px;
+}
+
+.message-banner {
+    background: #d4edda;
+    color: #155724;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #28a745;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Lookup Header */
+.lookup-header {
+    margin-bottom: 24px;
+}
+
+.lookup-header h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 8px;
+}
+
+.lookup-description {
+    font-size: 14px;
+    color: var(--dark-gray);
+}
+
+/* Add Item Section */
+.add-item-section {
+    margin-bottom: 24px;
+    padding: 20px;
+    background: var(--light);
+    border-radius: 10px;
+}
+
+.input-group {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.lookup-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid var(--grey);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: var(--font-family);
+    transition: all 0.3s ease;
+}
+
+.lookup-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(71, 79, 168, 0.1);
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--dark);
+    transform: translateY(-2px);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Items List */
+.items-list {
+    margin-bottom: 24px;
+}
+
+.items-list h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--grey);
+}
+
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.items-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.items-grid::-webkit-scrollbar-track {
+    background: var(--light);
+    border-radius: 4px;
+}
+
+.items-grid::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+}
+
+.item-tag {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--light);
+    border-radius: 8px;
+    border: 1px solid var(--grey);
+    transition: all 0.3s ease;
+}
+
+.item-tag:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.item-tag:hover span {
+    color: var(--white);
+}
+
+.item-tag span {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dark);
+    transition: color 0.3s ease;
+}
+
+.delete-item-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--dark-gray);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.delete-item-btn:hover {
+    background: var(--danger);
+    color: var(--white);
+}
+
+.delete-item-btn i {
+    font-size: 18px;
+}
+
+/* No Items Message */
+.no-items-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--dark-gray);
+}
+
+.no-items-message i {
+    font-size: 48px;
+    color: var(--grey);
+    margin-bottom: 16px;
+}
+
+.no-items-message p {
+    font-size: 14px;
+}
+
+/* Usage Info */
+.usage-info {
+    display: flex;
+    gap: 16px;
+    padding: 20px;
+    background: var(--light);
+    border-radius: 10px;
+    border-left: 4px solid var(--primary);
+}
+
+.usage-info i {
+    font-size: 24px;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.usage-info strong {
+    display: block;
+    font-size: 14px;
+    color: var(--dark);
+    margin-bottom: 8px;
+}
+
+.usage-info p {
+    font-size: 13px;
+    color: var(--dark-gray);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .lookup-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .lookup-sidebar {
+        width: 100%;
+        position: static;
+        max-height: none;
+    }
+
+    .category-menu {
+        display: flex;
+        overflow-x: auto;
+        gap: 8px;
+        padding-bottom: 8px;
+    }
+
+    .category-menu li {
+        flex-shrink: 0;
+        margin-bottom: 0;
+    }
+
+    .input-group {
+        flex-direction: column;
+    }
+
+    .lookup-input {
+        width: 100%;
+    }
+
+    .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .items-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Dark Mode Support */
+[data-theme='dark'] .lookup-sidebar,
+[data-theme='dark'] .lookup-content,
+[data-theme='dark'] .add-item-section,
+[data-theme='dark'] .usage-info {
+    background: #1e1e1e;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    border-color: #333;
+}
+
+[data-theme='dark'] .category-menu li:not(.disabled):hover {
+    background: #2a2a2a;
+}
+
+[data-theme='dark'] .item-tag {
+    background: #2a2a2a;
+    border-color: #333;
+}
+
+[data-theme='dark'] .item-tag span {
+    color: #aaa;
+}
+
+[data-theme='dark'] .item-tag:hover {
+    background: #474fa8;
+    border-color: #474fa8;
+}
+
+[data-theme='dark'] .message-banner {
+    background: #1b3a24;
+    color: #a8d5ba;
+    border-left-color: #28a745;
+}
+
+[data-theme='dark'] .lookup-header h3,
+[data-theme='dark'] .items-list h4,
+[data-theme='dark'] .usage-info strong {
+    color: #e0e0e0;
+}
+
+[data-theme='dark'] .lookup-description,
+[data-theme='dark'] .usage-info p {
+    color: #aaa;
+}

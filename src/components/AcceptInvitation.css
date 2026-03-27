@@ -1,0 +1,249 @@
+/* AcceptInvitation.css - Branded Version */
+
+:root {
+    --white: #ffffff;
+    --primary: #474fa8;
+    --light-primary: #d6d8ff;
+    --light: #f1e7ff;
+    --dark: #1c2237;
+    --danger: #ff4b5c;
+    --light-danger: #f8d7db;
+    --success: #831dba;
+    --light-success: #f2e7ff;
+    --warning: #ffc107;
+    --grey: #acacac;
+    --dark-gray: #aaaaaa;
+    --font-family: 'Poppins', sans-serif;
+    --image: invert(0%);
+}
+
+.accept-invitation-container {
+  min-height: 100vh;
+  background-color: var(--light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  font-family: var(--font-family);
+}
+
+.accept-invitation-card {
+  background-color: var(--white);
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  width: 100%;
+  max-width: 28rem;
+  border: 1px solid var(--light-primary);
+}
+
+.accept-invitation-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.accept-invitation-icon-container {
+  width: 4rem;
+  height: 4rem;
+  background: linear-gradient(to right, var(--primary), var(--success));
+  border-radius: 50%;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.accept-invitation-icon {
+  width: 2rem;
+  height: 2rem;
+  color: var(--white);
+  filter: var(--image);
+}
+
+.accept-invitation-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 0.5rem;
+}
+
+.accept-invitation-subtitle {
+  color: var(--grey);
+  font-size: 0.875rem;
+}
+
+.message-container {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.message-success {
+  background-color: var(--light-success);
+  color: var(--success);
+  border: 1px solid var(--light-primary);
+}
+
+.message-error {
+  background-color: var(--light-danger);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+.accept-invitation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--dark);
+  margin-bottom: 0.25rem;
+}
+
+.email-display {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--dark-gray);
+  border-radius: 0.5rem;
+  background-color: var(--light);
+  color: var(--grey);
+  font-size: 0.875rem;
+  cursor: not-allowed;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--dark-gray);
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition-duration: 200ms;
+}
+
+.input-field:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--light-primary);
+  border-color: var(--primary);
+}
+
+.password-requirements {
+  background-color: var(--light-success);
+  border-radius: 0.5rem;
+  padding: 0.875rem;
+  border: 1px solid var(--light-primary);
+}
+
+.requirements-header {
+  font-weight: 500;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.requirements-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
+}
+
+.requirements-list {
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.requirement-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.25rem;
+}
+
+.requirement-item:last-child {
+  margin-bottom: 0;
+}
+
+.requirement-check {
+  margin-right: 0.5rem;
+  color: var(--grey);
+}
+
+.requirement-check.met {
+  color: var(--success);
+}
+
+.submit-button {
+  width: 100%;
+  background: linear-gradient(to right, var(--primary), var(--success));
+  color: var(--white);
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  transition-duration: 200ms;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.submit-button:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.submit-button:disabled {
+  background: var(--dark-gray);
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.spinner {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 0.75rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.button-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.login-link-container {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--grey);
+}
+
+.login-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition-duration: 200ms;
+}
+
+.login-link:hover {
+  color: var(--success);
+  text-decoration: underline;
+}

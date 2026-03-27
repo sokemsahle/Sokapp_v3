@@ -1,0 +1,1099 @@
+/* --- Requisition Page Layout --- */
+
+/* ===== EXPORT DROPDOWN STYLES ===== */
+.export-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.export-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px var(--shadow-md);
+  min-width: 180px;
+  z-index: 1000;
+  margin-top: 8px;
+  overflow: hidden;
+  border: 1px solid var(--grey);
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.export-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--dark);
+  transition: all 0.2s ease;
+}
+
+.export-menu-item:hover {
+  background-color: var(--light);
+  color: var(--primary);
+}
+
+.export-menu-item i {
+  font-size: 18px;
+}
+
+.export-menu-item:first-child {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.export-menu-item:last-child {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* ===== END EXPORT DROPDOWN STYLES ===== */
+
+.requisition-container {
+    width: 100%;
+    padding: 2rem;
+    background-color: var(--light-primary);
+    min-height: 100vh;
+    overflow-y: auto;
+}
+
+/* Header */
+.requisition-container .header {
+    margin-bottom: 2rem;
+}
+
+.requisition-container .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+}
+
+.requisition-container .breadcrumb {
+    display: flex;
+    gap: 0.5rem;
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+}
+
+.requisition-container .breadcrumb .active {
+    color: var(--success);
+    font-weight: 500;
+}
+
+/* Form Card */
+.form-card {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* Input Grids */
+.form-header-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.input-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.input-group input,
+.input-group select {
+    padding: 0.75rem;
+    border: 1px solid var(--grey);
+    border-radius: 6px;
+    font-size: 1rem;
+    color: var(--dark);
+    outline: none;
+    background: var(--light);
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    border-color: var(--primary);
+    background: var(--white);
+}
+
+/* Items Table */
+.items-table-container {
+    margin-bottom: 2rem;
+}
+
+.items-table-container h3 {
+    margin-bottom: 1rem;
+    color: var(--dark);
+    font-size: 1.2rem;
+}
+
+.requisition-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+.requisition-table th {
+    text-align: left;
+    padding: 1rem;
+    background: var(--light-primary);
+    color: var(--primary);
+    font-weight: 600;
+    border-radius: 4px;
+}
+
+.requisition-table td {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--light);
+}
+
+.requisition-table input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--light);
+    border-radius: 4px;
+}
+
+.requisition-table input:focus {
+    border-color: var(--primary);
+    outline: none;
+}
+
+.readonly-input {
+    background-color: var(--light);
+    color: var(--dark-gray);
+    border: none !important;
+    font-weight: 600;
+}
+
+/* Buttons */
+.btn-delete {
+    background: transparent;
+    border: none;
+    color: var(--danger);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: color 0.2s;
+}
+
+.btn-delete:hover {
+    color: var(--danger);
+}
+
+.table-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.btn-add {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: 2px dashed var(--primary);
+    color: var(--primary);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-add:hover {
+    background: var(--light-primary);
+}
+
+.grand-total {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--dark);
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.grand-total .amount {
+    color: var(--success);
+    font-size: 1.5rem;
+}
+
+/* Approvals Section */
+.approvals-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--grey);
+}
+
+.approvals-section h3 {
+    margin-bottom: 1rem;
+    color: var(--dark);
+}
+
+.approval-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+}
+
+.approval-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.approval-box label {
+    font-size: 0.85rem;
+    color: var(--dark-gray);
+    font-weight: 600;
+}
+
+.approval-box input {
+    border: none;
+    border-bottom: 2px solid var(--grey);
+    padding: 0.5rem 0;
+    background: transparent;
+    color: var(--dark);
+}
+
+/* Footer Actions */
+.form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-top: 1px solid var(--light);
+    margin-top: 20px;
+}
+
+.form-footer-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.notification-buttons {
+    display: flex;
+    gap: 10px;
+    margin-right: 15px;
+}
+
+.btn-notify-reviewer {
+    background-color: var(--warning);
+    color: var(--dark);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-notify-reviewer:hover {
+    filter: brightness(90%);
+}
+
+.btn-notify-approver {
+    background-color: var(--success);
+    color: var(--white);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-notify-approver:hover {
+    filter: brightness(90%);
+}
+
+.btn-notify-authorizer {
+    background-color: var(--primary);
+    color: var(--white);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-notify-authorizer:hover {
+    filter: brightness(90%);
+}
+
+.btn-secondary {
+    padding: 0.8rem 2rem;
+    border: 1px solid var(--grey);
+    background: var(--White);
+    color: var(--dark-gray);
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-primary {
+    padding: 0.8rem 2rem;
+    background: var(--success); /* Using success color for main action */
+    color: var(--white);
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: var(--primary);
+    filter: brightness(0.9);
+}
+
+
+/* --- Signature Pad Styles --- */
+
+.signature-box {
+    min-height: 120px; /* Ensure space for signature */
+}
+
+.signature-pad-container {
+    border: 2px dashed var(--grey);
+    border-radius: 8px;
+    background: var(--white);
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.sigCanvas {
+    width: 100%;
+    height: 150px;
+    background-color: var(--white);
+    border-radius: 8px 8px 0 0;
+    cursor: crosshair;
+}
+
+/* Controls inside the signature area */
+.sig-controls {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--light);
+    border-top: 1px solid var(--grey);
+    border-radius: 0 0 8px 8px;
+}
+
+.btn-sig-clear {
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    padding: 0.2rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.btn-sig-save {
+    background: var(--success);
+    border: none;
+    color: white;
+    padding: 0.2rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+/* Trigger Button */
+.btn-sign-trigger {
+    padding: 1rem;
+    border: 1px dashed var(--primary);
+    background: var(--light-primary);
+    color: var(--primary);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-sign-trigger:hover {
+    background: var(--light-primary);
+}
+
+/* Preview Image */
+.signature-preview {
+    position: relative;
+    border-bottom: 2px solid var(--grey);
+}
+
+.signature-preview img {
+    max-width: 100%;
+    max-height: 80px;
+    display: block;
+}
+
+/* --- Notification Panel Styles --- */
+
+.notification-overlay {
+    padding-right: 7rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+}
+
+.notification-panel {
+    background: var(--white);
+    width: 400px;
+    height: 100vh;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.notification-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--light-primary);
+}
+
+.notification-header h3 {
+    margin: 0;
+    color: var(--dark);
+    font-size: 1.2rem;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--dark-gray);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    background: var(--light);
+    color: var(--dark);
+}
+
+.notification-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.notification-list {
+    padding: 0.5rem;
+}
+
+.notification-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--light);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 8px;
+    margin: 0.5rem;
+}
+
+.notification-item:hover {
+    background: var(--light-primary);
+    transform: translateX(5px);
+}
+
+.notification-main {
+    margin-bottom: 0.5rem;
+}
+
+.notification-title {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.req-id {
+    background: var(--primary);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.req-name {
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.notification-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.department {
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.purpose {
+    color: var(--dark-gray);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.notification-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+.date {
+    color: var(--dark-gray);
+}
+
+.status-unsigned {
+    background: var(--light-danger);
+    color: var(--danger);
+}
+
+.status-review {
+    background: var(--light-warning);
+    color: var(--warning);
+}
+
+.status-approval {
+    background: var(--light-primary);
+    color: var(--primary);
+}
+
+.status-authorization {
+    background: var(--light);
+    color: var(--dark-gray);
+}
+
+.status-complete {
+    background: var(--light-success);
+    color: var(--success);
+}
+
+.status-finalized {
+    background: var(--light-success);
+    color: var(--success);
+    font-weight: 600;
+    padding: 0.4rem 0.8rem;
+}
+
+.notification-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem;
+}
+
+.notification-section {
+    margin-bottom: 1rem;
+}
+
+.notification-section-title {
+    padding: 0.75rem 0.5rem;
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--dark);
+    background: var(--light-primary);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.notification-section-title i {
+    font-size: 1.1rem;
+}
+
+.notification-item.finalized {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(40, 167, 69, 0.1) 100%);
+    border-left: 3px solid var(--success);
+}
+
+.notification-item.finalized:hover {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(40, 167, 69, 0.15) 100%);
+    transform: translateX(5px);
+}
+
+.amount {
+    font-weight: 600;
+    color: var(--success);
+    font-size: 0.85rem;
+}
+
+.no-notifications {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--dark-gray);
+}
+
+.no-notifications i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--success);
+}
+
+.no-notifications p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--dark);
+}
+
+.no-notifications span {
+    font-size: 0.9rem;
+}
+
+.retry-btn {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.retry-btn:hover {
+    background: var(--success);
+}
+
+/* --- Requisition List Styles --- */
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.btn-secondary {
+    background: var(--light);
+    color: var(--dark);
+    border: 1px solid var(--grey);
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: var(--light-primary);
+    border-color: var(--primary);
+}
+
+.btn-secondary i {
+    font-size: 1.1rem;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--light);
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    border: 1px solid var(--grey);
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-box i {
+    color: var(--dark-gray);
+}
+
+.search-box input {
+    border: none;
+    background: transparent;
+    outline: none;
+    flex: 1;
+    color: var(--dark);
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.requisition-list-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.requisition-list-table th {
+    text-align: left;
+    padding: 1rem;
+    background: var(--light-primary);
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.requisition-list-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--light);
+    color: var(--dark);
+}
+
+.requisition-list-table tr:hover {
+    background: var(--light);
+}
+
+.purpose-cell {
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-pending {
+    background: rgba(255, 193, 7, 0.1);
+    color: var(--warning);
+}
+
+.status-approved {
+    background: var(--light-success);
+    color: var(--success);
+}
+
+.status-rejected {
+    background: var(--light-danger);
+    color: var(--danger);
+}
+
+.btn-edit {
+    background: transparent;
+    border: none;
+    color: var(--primary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: color 0.2s;
+}
+
+.btn-edit:hover {
+    color: var(--success);
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon.btn-edit {
+    color: var(--primary);
+}
+
+.btn-icon.btn-edit:hover {
+    color: var(--success);
+    background: var(--light-primary);
+}
+
+.btn-icon.btn-export {
+    color: var(--dark-gray);
+}
+
+.btn-icon.btn-export:hover {
+    color: var(--primary);
+    background: var(--light-primary);
+}
+
+.no-data {
+    text-align: center;
+    color: var(--dark-gray);
+    padding: 3rem !important;
+}
+
+.list-footer {
+    margin-top: 1rem;
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 3rem;
+    color: var(--dark-gray);
+}
+
+.error-message {
+    text-align: center;
+    padding: 2rem;
+    color: var(--danger);
+}
+
+/* --- Sidebar Submenu Styles --- */
+
+.submenu-arrow {
+    margin-left: auto;
+    font-size: 1.2rem;
+    transition: transform 0.2s;
+}
+
+.submenu {
+    list-style: none;
+    padding-left: 3rem;
+    background: var(--light);
+    border-radius: 0 0 8px 8px;
+    margin: 0 0.5rem;
+}
+
+.submenu li {
+    height: 2.5rem !important;
+    margin: 0 !important;
+}
+
+.submenu li a {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    color: var(--dark-gray);
+    display: flex;
+    align-items: center;
+    height: 100%;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.submenu li a:hover {
+    background: var(--light-primary);
+    color: var(--primary);
+}
+
+.submenu li.active a {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* Fix for sidebar menu item with submenu */
+.sidebar .side-menu li:has(.submenu) {
+    height: auto;
+}
+
+.sidebar .side-menu li:has(.submenu) > a {
+    margin-bottom: 0.5rem;
+}
+
+/* Approval Section Styles */
+.approvals-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: var(--light-primary);
+    border-radius: 12px;
+}
+
+.admin-only-notice {
+    background: var(--light-warning);
+    border: 1px solid var(--warning);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--warning);
+    font-size: 0.9rem;
+}
+
+.admin-only-notice i {
+    font-size: 1.2rem;
+}
+
+.approvals-section h3 {
+    margin-bottom: 1.5rem;
+    color: var(--dark);
+    font-size: 1.3rem;
+}
+
+.approval-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.approval-box {
+    background: var(--white);
+    padding: 1.2rem;
+    border-radius: 8px;
+    border: 1px solid var(--light);
+}
+
+.approval-box label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--dark);
+}
+
+.approval-box input {
+    width: 100%;
+    padding: 0.7rem;
+    border: 1px solid var(--grey);
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+.approval-box input:disabled {
+    background: var(--light);
+    color: var(--dark-gray);
+}
+
+.signature-box {
+    text-align: center;
+}
+
+.btn-sign-trigger {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.btn-sign-trigger:hover:not(:disabled) {
+    background: var(--success);
+    transform: translateY(-2px);
+}
+
+.btn-sign-trigger:disabled {
+    background: var(--grey);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-sign-trigger.disabled {
+    background: var(--grey) !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+    color: var(--dark-gray) !important;
+}
+
+
+
+.signature-preview {
+    margin-top: 1rem;
+}
+
+.signature-preview img {
+    max-width: 100%;
+    height: 100px;
+    border: 1px solid var(--grey);
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.btn-sig-reset {
+    background: var(--light-danger);
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.btn-sig-reset:hover {
+    background: var(--danger);
+    color: white;
+}
+
+.no-signature {
+    padding: 1rem;
+    text-align: center;
+    color: var(--dark-gray);
+    font-style: italic;
+    background: var(--light);
+    border-radius: 4px;
+    margin-top: 1rem;
+}
