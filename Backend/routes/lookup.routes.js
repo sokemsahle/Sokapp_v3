@@ -41,12 +41,22 @@ router.get('/', async (req, res) => {
             ORDER BY li.display_order, li.value
         `);
 
+        // Fetch asset categories
+        const [assetCategories] = await db.query(`
+            SELECT li.value 
+            FROM lookup_items li
+            INNER JOIN lookup_categories lc ON li.category_id = lc.id
+            WHERE lc.name = 'asset_categories' AND li.is_active = TRUE
+            ORDER BY li.display_order, li.value
+        `);
+
         res.json({
             success: true,
             departments: departments.map(d => d.value),
             positions: positions.map(p => p.value),
             employeeStatuses: employeeStatuses.map(s => s.value),
-            inventoryCategories: inventoryCategories.map(c => c.value)
+            inventoryCategories: inventoryCategories.map(c => c.value),
+            assetCategories: assetCategories.map(a => a.value)
         });
     } catch (error) {
         console.error('Error fetching lookup data:', error);
@@ -75,7 +85,8 @@ router.post('/add', async (req, res) => {
             'departments': 'departments',
             'positions': 'positions',
             'employeeStatuses': 'employee_statuses',
-            'inventoryCategories': 'inventory_categories'
+            'inventoryCategories': 'inventory_categories',
+            'assetCategories': 'asset_categories'
         };
 
         const dbCategoryName = categoryMap[category];
@@ -157,7 +168,8 @@ router.delete('/delete', async (req, res) => {
             'departments': 'departments',
             'positions': 'positions',
             'employeeStatuses': 'employee_statuses',
-            'inventoryCategories': 'inventory_categories'
+            'inventoryCategories': 'inventory_categories',
+            'assetCategories': 'asset_categories'
         };
 
         const dbCategoryName = categoryMap[category];

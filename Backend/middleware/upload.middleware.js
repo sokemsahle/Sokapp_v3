@@ -26,7 +26,7 @@ const fileFilter = (req, file, cb) => {
         } else {
             cb(new Error('Only image files (JPEG, PNG, WebP) are allowed for profile photos'), false);
         }
-    } else if (file.fieldname === 'documentFile' || file.fieldname === 'medicalReport' || file.fieldname === 'certificate') {
+    } else if (file.fieldname === 'documentFile' || file.fieldname === 'medicalReport' || file.fieldname === 'certificate' || file.fieldname === 'file') {
         if (allowedDocumentTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {

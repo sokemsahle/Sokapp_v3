@@ -39,6 +39,7 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
   const [isRejecting, setIsRejecting] = useState(false); // Track if showing rejection modal
   const [rejectionNote, setRejectionNote] = useState(''); // Store rejection note
   const [rejectionSubmitting, setRejectionSubmitting] = useState(false); // Track rejection submission
+  const [pendingSignatureType, setPendingSignatureType] = useState(null); // Track which signature needs to be saved
   
   console.log('DEBUG: Requisition component rendered with:', { mode, requisitionId, isOpen, currentUser });
   
@@ -111,13 +112,14 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
       
       console.log('DEBUG: Fetching requisition data for ID:', id);
       console.log('DEBUG: Current user email:', currentUser?.email);
+      console.log('DEBUG: Current user ID:', currentUser?.id);
       console.log('DEBUG: User roles:', userRoles);
       console.log('DEBUG: User is admin:', currentUser?.is_admin);
       
-      // Fetch requisition data with user email for access validation
+      // Fetch requisition data with user email and ID for access validation
       console.log('DEBUG: Fetching requisition data...');
       const apiUrl = currentUser?.email 
-        ? `http://localhost:5000/api/requisition/${id}?email=${encodeURIComponent(currentUser.email)}`
+        ? `http://localhost:5000/api/requisition/${id}?email=${encodeURIComponent(currentUser.email)}&userId=${encodeURIComponent(currentUser.id || '')}`
         : `http://localhost:5000/api/requisition/${id}`;
       console.log('DEBUG: API URL:', apiUrl);
       const response = await fetch(apiUrl);
@@ -255,6 +257,35 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
   };
 
   // --- 3. Signature Functions ---
+  
+  // Helper function to get pen color based on theme
+  const getPenColor = () => {
+    if (typeof window !== 'undefined' && document.body.classList.contains('dark')) {
+      return '#ffffff';
+    }
+    return '#000000';
+  };
+  
+  // Helper function to get canvas background color
+  const getCanvasBgColor = () => {
+    if (typeof window !== 'undefined' && document.body.classList.contains('dark')) {
+      return '#1a1a1a';
+    }
+    return '#ffffff';
+  };
+  
+  // Canvas configuration for accurate drawing
+  const getCanvasProps = (signatureType) => ({
+    className: 'sigCanvas',
+    style: { 
+      backgroundColor: getCanvasBgColor(),
+      width: '100%',
+      height: '150px'
+    },
+    width: 400,
+    height: 150
+  });
+  
   const clearSignature = (signatureType) => {
     // Determine which pad to use based on signature type
     let padToUse = sigPad;
@@ -280,6 +311,9 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
   };
     
   const saveSignature = (signatureType) => {
+    console.log('=== saveSignature called ===');
+    console.log('signatureType:', signatureType);
+    
     // Determine which pad to use based on signature type
     let padToUse = sigPad;
     if (signatureType === 'reviewed') {
@@ -289,53 +323,135 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
     } else if (signatureType === 'authorized') {
       padToUse = authorizeSigPad;
     }
+    
+    console.log('padToUse ref:', padToUse);
+    console.log('padToUse.current:', padToUse.current);
       
-    if (!padToUse.current.isEmpty()) {
+    if (padToUse.current && !padToUse.current.isEmpty()) {
+      console.log('✓ Canvas is NOT empty, proceeding...');
       // FIX: Replace getTrimmedCanvas() with getCanvas() 
       // This avoids the "trim_canvas is not a function" error
       const canvas = padToUse.current.getCanvas();
       const dataURL = canvas.toDataURL('image/png');
+      
+      console.log('✓ Generated dataURL, length:', dataURL ? dataURL.length : 0);
         
       if (signatureType === 'approved') {
+        console.log('Setting approvedSignature with length:', dataURL.length);
         setApprovedSignature(dataURL);
+        // Force a log right after setting
+        setTimeout(() => {
+          console.log('>>> IMMEDIATE CHECK after setApprovedSignature:', dataURL ? dataURL.substring(0, 50) + '...' : 'NULL');
+        }, 0);
       } else if (signatureType === 'authorized') {
+        console.log('Setting authorizedSignature...');
         setAuthorizedSignature(dataURL);
       } else if (signatureType === 'reviewed') {
+        console.log('Setting reviewedSignature...');
         setReviewedSignature(dataURL);
       } else {
+        console.log('Setting requestor signature...');
         setSignature(dataURL);
       }
         
       setIsSigning(false);
+      
+      // Track which signature type was just added for the "Save Signature" button
+      setPendingSignatureType(signatureType);
+      console.log('Set pendingSignatureType to:', signatureType);
+      console.log('Current state values will update on next render...');
+      
+      // Auto-save in view mode - PASS THE SIGNATURE DATA DIRECTLY TO AVOID TIMING ISSUES
+      if (mode === 'view' && requisitionId) {
+        console.log('Auto-saving in view mode with signature data...');
+        handleSignatureSubmitWithDirectData(signatureType, dataURL);
+      }
     } else {
+      console.error('✗ Canvas is EMPTY or padToUse.current is null!');
+      console.error('padToUse.current:', padToUse.current);
+      if (padToUse.current) {
+        console.error('Canvas isEmpty():', padToUse.current.isEmpty());
+      }
       alert("Please provide a signature first.");
     }
   };
   
   // --- 4. Save Signature Changes in View Mode ---
-  const handleSignatureSubmit = async () => {
+  const handleSignatureSubmit = async (signatureType) => {
     if (!requisitionId) {
       alert('Cannot save - requisition ID not available');
       return;
     }
     
-    // Validate that at least one signature field has been updated
-    if (!reviewedSignature && !approvedSignature && !authorizedSignature) {
-      alert('Please add at least one signature');
+    // If no signatureType provided, use the pending one from state
+    const typeToSave = signatureType || pendingSignatureType;
+    
+    console.log('=== handleSignatureSubmit START ===');
+    console.log('Arguments signatureType:', signatureType);
+    console.log('State pendingSignatureType:', pendingSignatureType);
+    console.log('Computed typeToSave:', typeToSave);
+    
+    if (!typeToSave) {
+      alert('No signature to save. Please add a signature first.');
       return;
     }
     
     try {
-      const payload = {
-        reviewed_signature: reviewedSignature || null,
-        approved_signature: approvedSignature || null,
-        authorized_signature: authorizedSignature || null,
-        reviewed_by: formData.reviewedBy || null,
-        approved_by: formData.approvedBy || null,
-        authorized_by: formData.authorizedBy || null
-      };
+      console.log('DEBUG: Checking signature states...');
+      console.log('typeToSave:', typeToSave);
+      console.log('reviewedSignature length:', reviewedSignature ? reviewedSignature.length : 'NULL');
+      console.log('approvedSignature length:', approvedSignature ? approvedSignature.length : 'NULL');
+      console.log('authorizedSignature length:', authorizedSignature ? authorizedSignature.length : 'NULL');
+      console.log('formData.reviewedBy:', formData.reviewedBy);
+      console.log('formData.approvedBy:', formData.approvedBy);
+      console.log('formData.authorizedBy:', formData.authorizedBy);
+      
+      // Build payload with ONLY the signature that was just added
+      const payload = {};
+      
+      if (typeToSave === 'reviewed') {
+        console.log('Checking reviewed signature...');
+        if (reviewedSignature) {
+          payload.reviewed_signature = reviewedSignature;
+          payload.reviewed_by = formData.reviewedBy || null;
+          console.log('✓ Added reviewed_signature to payload, length:', reviewedSignature.length);
+        } else {
+          console.log('✗ reviewedSignature is NULL/undefined');
+        }
+      } else if (typeToSave === 'approved') {
+        console.log('Checking approved signature...');
+        if (approvedSignature) {
+          payload.approved_signature = approvedSignature;
+          payload.approved_by = formData.approvedBy || null;
+          console.log('✓ Added approved_signature to payload, length:', approvedSignature.length);
+        } else {
+          console.log('✗ approvedSignature is NULL/undefined');
+        }
+      } else if (typeToSave === 'authorized') {
+        console.log('Checking authorized signature...');
+        if (authorizedSignature) {
+          payload.authorized_signature = authorizedSignature;
+          payload.authorized_by = formData.authorizedBy || null;
+          console.log('✓ Added authorized_signature to payload, length:', authorizedSignature.length);
+        } else {
+          console.log('✗ authorizedSignature is NULL/undefined');
+        }
+      }
+      
+      console.log('Final payload keys:', Object.keys(payload));
+      
+      // Check if we have anything to send
+      if (Object.keys(payload).length === 0) {
+        console.error('ERROR: Payload is empty!');
+        console.error('Type to save:', typeToSave);
+        console.error('All signature states:', { reviewedSignature: !!reviewedSignature, approvedSignature: !!approvedSignature, authorizedSignature: !!authorizedSignature });
+        alert('No signature to save. Type: ' + typeToSave + '. Check browser console for details.');
+        return;
+      }
       
       console.log('=== SAVING SIGNATURE CHANGES ===');
+      console.log('Signature type to save:', typeToSave);
+      console.log('Pending signature type from state:', pendingSignatureType);
       console.log('Payload:', JSON.stringify(payload, null, 2));
       
       const response = await fetch(`http://localhost:5000/api/requisition/${requisitionId}`, {
@@ -350,17 +466,96 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
       console.log('Response:', result);
       
       if (result.success) {
-        alert('Signature(s) saved successfully!');
+        alert('Signature saved successfully!');
+        // Clear the pending signature type
+        setPendingSignatureType(null);
         // Refresh the requisition data
         if (onBack) {
           onBack();
         }
       } else {
-        alert('Failed to save signatures: ' + result.message);
+        alert('Failed to save signature: ' + result.message);
       }
     } catch (error) {
       console.error('Error saving signatures:', error);
-      alert('Error saving signatures: ' + error.message);
+      alert('Error saving signature: ' + error.message);
+    }
+  };
+  
+  // New function to handle signature submission with direct data (avoids React async state timing issues)
+  const handleSignatureSubmitWithDirectData = async (signatureType, signatureData) => {
+    if (!requisitionId) {
+      alert('Cannot save - requisition ID not available');
+      return;
+    }
+    
+    console.log('=== handleSignatureSubmitWithDirectData START ===');
+    console.log('signatureType:', signatureType);
+    console.log('signatureData length:', signatureData ? signatureData.length : 'NULL');
+    
+    if (!signatureType || !signatureData) {
+      alert('No signature to save. Please add a signature first.');
+      return;
+    }
+    
+    try {
+      console.log('Building payload with direct signature data...');
+      
+      // Build payload with the direct signature data passed as parameter
+      const payload = {};
+      
+      if (signatureType === 'reviewed') {
+        payload.reviewed_signature = signatureData;
+        payload.reviewed_by = formData.reviewedBy || null;
+        console.log('✓ Added reviewed_signature to payload, length:', signatureData.length);
+      } else if (signatureType === 'approved') {
+        payload.approved_signature = signatureData;
+        payload.approved_by = formData.approvedBy || null;
+        console.log('✓ Added approved_signature to payload, length:', signatureData.length);
+      } else if (signatureType === 'authorized') {
+        payload.authorized_signature = signatureData;
+        payload.authorized_by = formData.authorizedBy || null;
+        console.log('✓ Added authorized_signature to payload, length:', signatureData.length);
+      }
+      
+      console.log('Final payload keys:', Object.keys(payload));
+      
+      // Check if we have anything to send
+      if (Object.keys(payload).length === 0) {
+        console.error('ERROR: Payload is empty!');
+        alert('No signature to save. Type: ' + signatureType);
+        return;
+      }
+      
+      console.log('=== SAVING SIGNATURE WITH DIRECT DATA ===');
+      console.log('Signature type:', signatureType);
+      console.log('Payload:', JSON.stringify(payload, null, 2));
+      
+      const response = await fetch(`http://localhost:5000/api/requisition/${requisitionId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      
+      const result = await response.json();
+      console.log('Response:', result);
+      
+      if (result.success) {
+        alert('Signature saved successfully!');
+        // Clear the pending signature type
+        setPendingSignatureType(null);
+        // Refresh the requisition data
+        if (onBack) {
+          onBack();
+        }
+      } else {
+        alert('Failed to save signature: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error saving signature with direct data:', error);
+      alert('Error saving signature: ' + error.message);
     }
   };
   
@@ -805,8 +1000,8 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                   <div className="signature-pad-container">
                     <SignatureCanvas 
                       ref={sigPad}
-                      penColor="black"
-                      canvasProps={{className: 'sigCanvas'}}
+                      penColor={getPenColor()}
+                      canvasProps={getCanvasProps('requestor')}
                     />
                     <div className="sig-controls">
                       <button className="btn-sig-clear" onClick={() => clearSignature('requestor')}>Clear</button>
@@ -838,8 +1033,8 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                     <div className="signature-pad-container">
                       <SignatureCanvas 
                         ref={sigPad}
-                        penColor="black"
-                        canvasProps={{className: 'sigCanvas'}}
+                        penColor={getPenColor()}
+                        canvasProps={getCanvasProps('requestor')}
                       />
                       <div className="sig-controls">
                         <button className="btn-sig-clear" onClick={() => clearSignature('requestor')}>Clear</button>
@@ -876,12 +1071,12 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                   <div className="signature-pad-container">
                     <SignatureCanvas 
                       ref={reviewSigPad}
-                      penColor="black"
-                      canvasProps={{className: 'sigCanvas'}}
+                      penColor={getPenColor()}
+                      canvasProps={getCanvasProps('reviewed')}
                     />
                     <div className="sig-controls">
-                      <button className="btn-sig-clear" onClick={() => clearSignature('reviewed')}>Clear</button>
-                      <button className="btn-sig-save" onClick={() => saveSignature('reviewed')}>Save</button>
+                      <button className="btn-sig-clear" onClick={() => { console.log('Clear clicked for reviewed'); clearSignature('reviewed'); }}>Clear</button>
+                      <button className="btn-sig-save" onClick={(e) => { console.log('SAVE BUTTON CLICKED (reviewed)!'); e.preventDefault(); e.stopPropagation(); saveSignature('reviewed'); }}>Save</button>
                     </div>
                   </div>
                 ) : (
@@ -911,8 +1106,8 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                     <div className="signature-pad-container">
                       <SignatureCanvas 
                         ref={reviewSigPad}
-                        penColor="black"
-                        canvasProps={{className: 'sigCanvas'}}
+                        penColor={getPenColor()}
+                        canvasProps={getCanvasProps('reviewed')}
                       />
                       <div className="sig-controls">
                         <button className="btn-sig-clear" onClick={() => clearSignature('reviewed')}>Clear</button>
@@ -971,12 +1166,12 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                   <div className="signature-pad-container">
                     <SignatureCanvas 
                       ref={approveSigPad}
-                      penColor="black"
-                      canvasProps={{className: 'sigCanvas'}}
+                      penColor={getPenColor()}
+                      canvasProps={getCanvasProps('approved')}
                     />
                     <div className="sig-controls">
-                      <button className="btn-sig-clear" onClick={() => clearSignature('approved')}>Clear</button>
-                      <button className="btn-sig-save" onClick={() => saveSignature('approved')}>Save</button>
+                      <button className="btn-sig-clear" onClick={() => { console.log('Clear clicked for approved'); clearSignature('approved'); }}>Clear</button>
+                      <button className="btn-sig-save" onClick={(e) => { console.log('SAVE BUTTON CLICKED!'); e.preventDefault(); e.stopPropagation(); saveSignature('approved'); }}>Save</button>
                     </div>
                   </div>
                 ) : (
@@ -1006,8 +1201,8 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                     <div className="signature-pad-container">
                       <SignatureCanvas 
                         ref={approveSigPad}
-                        penColor="black"
-                        canvasProps={{className: 'sigCanvas'}}
+                        penColor={getPenColor()}
+                        canvasProps={getCanvasProps('approved')}
                       />
                       <div className="sig-controls">
                         <button className="btn-sig-clear" onClick={() => clearSignature('approved')}>Clear</button>
@@ -1066,12 +1261,12 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                   <div className="signature-pad-container">
                     <SignatureCanvas 
                       ref={authorizeSigPad}
-                      penColor="black"
-                      canvasProps={{className: 'sigCanvas'}}
+                      penColor={getPenColor()}
+                      canvasProps={getCanvasProps('authorized')}
                     />
                     <div className="sig-controls">
-                      <button className="btn-sig-clear" onClick={() => clearSignature('authorized')}>Clear</button>
-                      <button className="btn-sig-save" onClick={() => saveSignature('authorized')}>Save</button>
+                      <button className="btn-sig-clear" onClick={() => { console.log('Clear clicked for authorized'); clearSignature('authorized'); }}>Clear</button>
+                      <button className="btn-sig-save" onClick={(e) => { console.log('SAVE BUTTON CLICKED (authorized)!'); e.preventDefault(); e.stopPropagation(); saveSignature('authorized'); }}>Save</button>
                     </div>
                   </div>
                 ) : (
@@ -1101,8 +1296,8 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                     <div className="signature-pad-container">
                       <SignatureCanvas 
                         ref={authorizeSigPad}
-                        penColor="black"
-                        canvasProps={{className: 'sigCanvas'}}
+                        penColor={getPenColor()}
+                        canvasProps={getCanvasProps('authorized')}
                       />
                       <div className="sig-controls">
                         <button className="btn-sig-clear" onClick={() => clearSignature('authorized')}>Clear</button>

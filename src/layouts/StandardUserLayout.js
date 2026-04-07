@@ -11,6 +11,7 @@ import NotificationCenter from '../components/NotificationCenter';
 import ViewRequisitionPage from '../components/Requisition/ViewRequisitionPage';
 import Inventory from '../components/inventory';
 import InventoryRequestApproval from '../components/InventoryRequestApproval';
+import ReturnableItems from '../components/ReturnableItems';
 import EmployeeManagement from '../components/EmployeeForm/EmployeeManagement';
 import NotificationSettings from '../components/NotificationSettings';
 import Appointments from '../components/Appointments';
@@ -195,20 +196,32 @@ function StandardUserLayout({ handleLogout, user }) {
       const finalizedResponse = await fetch(`http://localhost:5000/api/requisitions/finalized?email=${encodeURIComponent(user.email)}&unseen=true&user_id=${user.id}`);
       const finalizedResult = await finalizedResponse.json();
       
+      // Fetch rejected requisitions (for requester notification)
+      const rejectedResponse = await fetch(`http://localhost:5000/api/requisitions/rejected?email=${encodeURIComponent(user.email)}&unseen=true&user_id=${user.id}`);
+      const rejectedResult = await rejectedResponse.json();
+      
       let totalCount = 0;
       
-      if (unsignedResult.success) {
-        totalCount += unsignedResult.requisitions?.length || 0;
+      // Only add unsigned count if user has requisition roles
+      // Standard users without roles will get empty array from backend
+      if (unsignedResult.success && unsignedResult.requisitions && unsignedResult.requisitions.length > 0) {
+        totalCount += unsignedResult.requisitions.length;
       }
       
-      if (finalizedResult.success) {
-        totalCount += finalizedResult.requisitions?.length || 0;
+      // Always add finalized count (for requesters)
+      if (finalizedResult.success && finalizedResult.requisitions && finalizedResult.requisitions.length > 0) {
+        totalCount += finalizedResult.requisitions.length;
+      }
+      
+      // Add rejected count (for requesters)
+      if (rejectedResult.success && rejectedResult.requisitions && rejectedResult.requisitions.length > 0) {
+        totalCount += rejectedResult.requisitions.length;
       }
       
       setNewRequisitionCount(totalCount);
       // Save to sessionStorage for persistence
       sessionStorage.setItem('notificationCount', totalCount.toString());
-      console.log('Notification count updated:', totalCount, '(unsigned:', unsignedResult.requisitions?.length || 0, ', finalized:', finalizedResult.requisitions?.length || 0, ')');
+      console.log('Notification count updated:', totalCount, '(unsigned:', unsignedResult.requisitions?.length || 0, ', finalized:', finalizedResult.requisitions?.length || 0, ', rejected:', rejectedResult.requisitions?.length || 0, ')');
     } catch (error) {
       console.error('Error fetching all notifications:', error);
     }
@@ -268,6 +281,7 @@ function StandardUserLayout({ handleLogout, user }) {
         inventorySubmenu.push({ text: 'Add New Item', route: '/user/inventory/add' });
         inventorySubmenu.push({ text: 'Transaction Log', route: '/user/inventory/transactions' });
         inventorySubmenu.push({ text: 'Request Approvals', route: '/user/inventory/approvals' });
+        inventorySubmenu.push({ text: 'Returnable Items', route: '/user/inventory/returnable' });
       }
       
       items.push({ 
@@ -542,6 +556,7 @@ function StandardUserLayout({ handleLogout, user }) {
             <Route path="/inventory/request" element={<Inventory Inventoryopen={true} user={user} hasManagePermission={false} viewMode="request" />} />
             <Route path="/inventory/transactions" element={<Inventory Inventoryopen={true} user={user} hasManagePermission={hasPermission('inventory_manage')} viewMode="transactions" />} />
             <Route path="/inventory/approvals" element={<InventoryRequestApproval user={user} hasManagePermission={hasPermission('inventory_manage')} />} />
+            <Route path="/inventory/returnable" element={<ReturnableItems user={user} hasManagePermission={hasPermission('inventory_manage')} />} />
             
             {/* My Requisitions Routes */}
             <Route path="/my-requisitions" element={

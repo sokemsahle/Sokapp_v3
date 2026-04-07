@@ -63,11 +63,11 @@ const Settings = ({settinopen, user, defaultSection}) => {
             return;
         }
         
-        // Validate file size (5MB max)
-        const maxSize = 5 * 1024 * 1024;
+        // Validate file size (2MB max for database storage)
+        const maxSize = 2 * 1024 * 1024; // 2MB
         if (file.size > maxSize) {
-            setMessage('File size should not exceed 5MB');
-            setTimeout(() => setMessage(''), 3000);
+            setMessage(`File size should not exceed 2MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB. Please choose a smaller image or compress it.`);
+            setTimeout(() => setMessage(''), 5000);
             return;
         }
         
@@ -95,8 +95,10 @@ const Settings = ({settinopen, user, defaultSection}) => {
                 
                 setTimeout(() => setMessage(''), 3000);
             } else {
-                setMessage('Failed to update profile picture: ' + (result.message || 'Unknown error'));
-                setTimeout(() => setMessage(''), 3000);
+                // Show detailed error message from backend
+                const errorMsg = result.message || 'Unknown error';
+                setMessage(`Failed to update profile picture: ${errorMsg}`);
+                setTimeout(() => setMessage(''), 5000);
             }
         } catch (error) {
             console.error('Error uploading profile picture:', error);

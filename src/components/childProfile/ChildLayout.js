@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getChild, deleteChild, downloadChildProfilePDF } from '../../services/childService';
+import ExportUtils from '../../utils/ExportUtils';
 import Tier2Tabs from './Tier2Tabs';
 import './ChildProfile.css';
 
@@ -10,6 +11,7 @@ const ChildLayout = ({ user, childId, onBack, basePath = '/admin' }) => {
   const [child, setChild] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   // Use childId from props OR from URL params (for direct URL access)
   const effectiveChildId = childId || id;
@@ -29,8 +31,48 @@ const ChildLayout = ({ user, childId, onBack, basePath = '/admin' }) => {
     return age;
   };
 
+  // Helper function to get detailed age for children under 1 year
+  const getDetailedAge = (dateOfBirth) => {
+    if (!dateOfBirth) return null;
+    const birthDate = new Date(dateOfBirth);
+    const now = new Date();
+    
+    // Calculate total time difference in milliseconds
+    const diffTime = now - birthDate;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    // If less than 1 year old
+    if (diffDays < 365) {
+      // Calculate months
+      let months = (now.getFullYear() - birthDate.getFullYear()) * 12;
+      months += now.getMonth() - birthDate.getMonth();
+      
+      // Adjust if day of month hasn't been reached yet
+      if (now.getDate() < birthDate.getDate()) {
+        months--;
+      }
+      
+      // Calculate remaining days
+      let days = 0;
+      const prevMonthDate = new Date(now.getFullYear(), now.getMonth(), 0);
+      const adjustedBirthDay = birthDate.getDate() > prevMonthDate.getDate() ? prevMonthDate.getDate() : birthDate.getDate();
+      
+      if (now.getDate() >= adjustedBirthDay) {
+        days = now.getDate() - adjustedBirthDay;
+      } else {
+        const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, adjustedBirthDay);
+        days = now.getDate() + (adjustedBirthDay - prevMonth.getDate());
+      }
+      
+      return { months, days, isUnderOneYear: true };
+    }
+    
+    return { years: calculateAge(dateOfBirth), isUnderOneYear: false };
+  };
+
   // Calculate current age
   const currentAge = child ? calculateAge(child.date_of_birth) : null;
+  const detailedAge = child ? getDetailedAge(child.date_of_birth) : null;
 
   // Debug logging
   useEffect(() => {
@@ -86,6 +128,152 @@ const ChildLayout = ({ user, childId, onBack, basePath = '/admin' }) => {
     }
   };
 
+  // Export child profile data to PDF
+  const exportProfileToPDF = () => {
+    const columns = [
+      { header: 'Field', accessor: 'field' },
+      { header: 'Value', accessor: 'value' }
+    ];
+    
+    // Calculate age display value with ~ prefix for estimated
+    let ageDisplay;
+    if (detailedAge?.isUnderOneYear) {
+      ageDisplay = `${detailedAge.months} month${detailedAge.months !== 1 ? 's' : ''}`;
+      if (detailedAge.days > 0) {
+        ageDisplay += `, ${detailedAge.days} day${detailedAge.days !== 1 ? 's' : ''}`;
+      }
+      // Add ~ prefix if estimated
+      if (child.date_of_birth_type === 'estimated') {
+        ageDisplay = `~${ageDisplay}`;
+      }
+    } else if (currentAge !== null) {
+      ageDisplay = `${currentAge} year${currentAge !== 1 ? 's' : ''} old`;
+      // Add ~ prefix if estimated
+      if (child.date_of_birth_type === 'estimated') {
+        ageDisplay = `~${ageDisplay}`;
+      }
+    } else {
+      ageDisplay = 'Unknown';
+    }
+    
+    const formattedData = [
+      { field: 'Full Name', value: `${child.first_name} ${child.middle_name || ''} ${child.last_name}`.trim() },
+      { field: 'Nickname', value: child.nickname || '-' },
+      { field: 'Gender', value: child.gender },
+      { field: 'Date of Birth', value: child.date_of_birth ? new Date(child.date_of_birth).toLocaleDateString() : 'Unknown' },
+      { field: 'Age', value: ageDisplay },
+      { field: 'Blood Group', value: child.blood_group || 'Unknown' },
+      { field: 'Admission Date', value: child.date_of_admission ? new Date(child.date_of_admission).toLocaleDateString() : 'Unknown' },
+      { field: 'Status', value: child.current_status },
+      { field: 'Health Status', value: child.health_status || '-' }
+    ];
+    
+    ExportUtils.exportToPDF(
+      `Child Profile - ${child.first_name} ${child.last_name}`,
+      columns,
+      formattedData,
+      `Child_${child.first_name}_${child.last_name}`
+    );
+    setShowExportMenu(false);
+  };
+
+  // Export child profile data to Excel
+  const exportProfileToExcel = () => {
+    const columns = [
+      { header: 'Field', accessor: 'field' },
+      { header: 'Value', accessor: 'value' }
+    ];
+    
+    // Calculate age display value with ~ prefix for estimated
+    let ageDisplay;
+    if (detailedAge?.isUnderOneYear) {
+      ageDisplay = `${detailedAge.months} month${detailedAge.months !== 1 ? 's' : ''}`;
+      if (detailedAge.days > 0) {
+        ageDisplay += `, ${detailedAge.days} day${detailedAge.days !== 1 ? 's' : ''}`;
+      }
+      // Add ~ prefix if estimated
+      if (child.date_of_birth_type === 'estimated') {
+        ageDisplay = `~${ageDisplay}`;
+      }
+    } else if (currentAge !== null) {
+      ageDisplay = `${currentAge} year${currentAge !== 1 ? 's' : ''} old`;
+      // Add ~ prefix if estimated
+      if (child.date_of_birth_type === 'estimated') {
+        ageDisplay = `~${ageDisplay}`;
+      }
+    } else {
+      ageDisplay = 'Unknown';
+    }
+    
+    const formattedData = [
+      { field: 'Full Name', value: `${child.first_name} ${child.middle_name || ''} ${child.last_name}`.trim() },
+      { field: 'Nickname', value: child.nickname || '-' },
+      { field: 'Gender', value: child.gender },
+      { field: 'Date of Birth', value: child.date_of_birth ? new Date(child.date_of_birth).toLocaleDateString() : 'Unknown' },
+      { field: 'Age', value: ageDisplay },
+      { field: 'Blood Group', value: child.blood_group || 'Unknown' },
+      { field: 'Admission Date', value: child.date_of_admission ? new Date(child.date_of_admission).toLocaleDateString() : 'Unknown' },
+      { field: 'Status', value: child.current_status },
+      { field: 'Health Status', value: child.health_status || '-' }
+    ];
+    
+    ExportUtils.exportToExcel(
+      columns,
+      formattedData,
+      'Child Profile',
+      `Child_${child.first_name}_${child.last_name}`
+    );
+    setShowExportMenu(false);
+  };
+
+  // Print child profile
+  const printProfile = () => {
+    const columns = [
+      { header: 'Field', accessor: 'field' },
+      { header: 'Value', accessor: 'value' }
+    ];
+    
+    // Calculate age display value with ~ prefix for estimated
+    let ageDisplay;
+    if (detailedAge?.isUnderOneYear) {
+      ageDisplay = `${detailedAge.months} month${detailedAge.months !== 1 ? 's' : ''}`;
+      if (detailedAge.days > 0) {
+        ageDisplay += `, ${detailedAge.days} day${detailedAge.days !== 1 ? 's' : ''}`;
+      }
+      // Add ~ prefix if estimated
+      if (child.date_of_birth_type === 'estimated') {
+        ageDisplay = `~${ageDisplay}`;
+      }
+    } else if (currentAge !== null) {
+      ageDisplay = `${currentAge} year${currentAge !== 1 ? 's' : ''} old`;
+      // Add ~ prefix if estimated
+      if (child.date_of_birth_type === 'estimated') {
+        ageDisplay = `~${ageDisplay}`;
+      }
+    } else {
+      ageDisplay = 'Unknown';
+    }
+    
+    const formattedData = [
+      { field: 'Full Name', value: `${child.first_name} ${child.middle_name || ''} ${child.last_name}`.trim() },
+      { field: 'Nickname', value: child.nickname || '-' },
+      { field: 'Gender', value: child.gender },
+      { field: 'Date of Birth', value: child.date_of_birth ? new Date(child.date_of_birth).toLocaleDateString() : 'Unknown' },
+      { field: 'Age', value: ageDisplay },
+      { field: 'Blood Group', value: child.blood_group || 'Unknown' },
+      { field: 'Admission Date', value: child.date_of_admission ? new Date(child.date_of_admission).toLocaleDateString() : 'Unknown' },
+      { field: 'Status', value: child.current_status },
+      { field: 'Health Status', value: child.health_status || '-' }
+    ];
+    
+    ExportUtils.printData(
+      `Child Profile - ${child.first_name} ${child.last_name}`,
+      columns,
+      formattedData
+    );
+    setShowExportMenu(false);
+  };
+
   if (loading) {
     return (
       <div className="child-layout">
@@ -131,9 +319,30 @@ const ChildLayout = ({ user, childId, onBack, basePath = '/admin' }) => {
           <h1>{child?.first_name} {child?.last_name}</h1>
         </div>
         <div className="child-header-actions">
-          <button onClick={handleExportProfile} className="btn-secondary" title="Export Profile as PDF">
-            <i className='bx bx-download'></i> Export Profile
-          </button>
+          <div className="export-dropdown" style={{ position: 'relative' }}>
+            <button 
+              onClick={() => setShowExportMenu(!showExportMenu)} 
+              className="btn-secondary"
+              type="button"
+              title="Export options"
+            >
+              <i className='bx bx-download'></i> Export / Print{' '}
+              <i className='bx bx-chevron-down'></i>
+            </button>
+            {showExportMenu && (
+              <div className="export-menu" style={{ position: 'absolute', right: 0, top: '100%', marginTop: '5px', zIndex: 1000 }}>
+                <button onClick={printProfile} className="export-menu-item">
+                  <i className='bx bx-printer'></i> Print
+                </button>
+                <button onClick={exportProfileToPDF} className="export-menu-item">
+                  <i className='bx bxs-file-pdf'></i> Save as PDF
+                </button>
+                <button onClick={exportProfileToExcel} className="export-menu-item">
+                  <i className='bx bxs-file-excel'></i> Export to Excel
+                </button>
+              </div>
+            )}
+          </div>
           {user?.permissions?.includes('child_update') && (
             <button onClick={() => navigate(`${basePath}/children/${effectiveChildId}/edit`)} className="btn-secondary">
               <i className='bx bx-edit'></i> Edit Profile
@@ -155,6 +364,12 @@ const ChildLayout = ({ user, childId, onBack, basePath = '/admin' }) => {
               <label>Full Name:</label>
               <span>{child?.first_name} {child?.middle_name || ''} {child?.last_name}</span>
             </div>
+            {child?.nickname && (
+              <div className="info-item">
+                <label>Nickname:</label>
+                <span style={{ fontWeight: '600', color: 'var(--primary)' }}>{child.nickname}</span>
+              </div>
+            )}
             <div className="info-item">
               <label>Gender:</label>
               <span>{child?.gender}</span>
@@ -166,7 +381,9 @@ const ChildLayout = ({ user, childId, onBack, basePath = '/admin' }) => {
             <div className="info-item">
               <label>Age:</label>
               <span style={{ fontWeight: '700', color: 'var(--primary)', fontSize: '16px' }}>
-                {currentAge !== null ? `${currentAge} years old` : (child?.estimated_age ? `~${child.estimated_age} years (estimated)` : 'Unknown')}
+                {detailedAge?.isUnderOneYear 
+                  ? `${detailedAge.months} month${detailedAge.months !== 1 ? 's' : ''}${detailedAge.days > 0 ? `, ${detailedAge.days} day${detailedAge.days !== 1 ? 's' : ''}` : ''}`
+                  : (currentAge !== null ? `${currentAge} year${currentAge !== 1 ? 's' : ''} old` : (child?.estimated_age ? `~${child.estimated_age} years (estimated)` : 'Unknown'))}
               </span>
             </div>
             {child?.estimated_age && !child?.date_of_birth && (

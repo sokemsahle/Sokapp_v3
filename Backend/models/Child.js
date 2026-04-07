@@ -76,22 +76,22 @@ class ChildModel {
         const connection = await mysql.createConnection(dbConfig);
         try {
             const {
-                firstName, middleName, lastName, gender, dateOfBirth, estimatedAge,
+                firstName, middleName, lastName, gender, dateOfBirth, ageType,
                 placeOfBirth, nationality, religion, bloodGroup, disabilityStatus,
                 disabilityDescription, healthStatus, dateOfAdmission, admittedBy,
-                currentStatus, profilePhoto, program_id, room_id, bed_id
+                currentStatus, profilePhoto, program_id, room_id, bed_id, nickname
             } = data;
     
             const [result] = await connection.execute(
                 `INSERT INTO children (
-                    first_name, middle_name, last_name, gender, date_of_birth, estimated_age,
+                    first_name, middle_name, last_name, nickname, gender, date_of_birth, date_of_birth_type,
                     place_of_birth, nationality, religion, blood_group, disability_status,
                     disability_description, health_status, date_of_admission, admitted_by,
                     current_status, profile_photo, program_id, room_id, bed_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
-                    firstName, middleName || null, lastName, gender, dateOfBirth || null,
-                    estimatedAge || null, placeOfBirth || null, nationality || null,
+                    firstName, middleName || null, lastName, nickname || null, gender, dateOfBirth || null,
+                    ageType || 'actual', placeOfBirth || null, nationality || null,
                     religion || null, bloodGroup || null, disabilityStatus || false,
                     disabilityDescription || null, healthStatus || null, dateOfAdmission,
                     admittedBy || null, currentStatus || 'Active', profilePhoto || null,
@@ -133,9 +133,10 @@ class ChildModel {
                 firstName: 'first_name',
                 middleName: 'middle_name',
                 lastName: 'last_name',
+                nickname: 'nickname',
                 gender: 'gender',
                 dateOfBirth: 'date_of_birth',
-                estimatedAge: 'estimated_age',
+                ageType: 'date_of_birth_type',
                 placeOfBirth: 'place_of_birth',
                 nationality: 'nationality',
                 religion: 'religion',

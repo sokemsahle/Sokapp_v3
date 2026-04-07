@@ -48,8 +48,8 @@ const InventoryReport = ({ selectedProgram }) => {
       const response = await fetch(url);
       const result = await response.json();
       
-      if (result.success && result.data) {
-        const items = result.data;
+      if (result.success && result.items) {
+        const items = result.items;
         setInventoryData(items);
         setTotalItems(items.length);
         calculateCategoryDistribution(items);

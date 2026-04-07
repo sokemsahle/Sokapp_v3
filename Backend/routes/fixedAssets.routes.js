@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
         let queryStr = `
             SELECT 
                 fa.*,
-                u.name as organization_name
+                u.full_name as organization_name
             FROM fixed_assets fa
             LEFT JOIN users u ON fa.organization_id = u.id
             WHERE 1=1
@@ -63,10 +63,11 @@ router.get('/', async (req, res) => {
 router.get('/categories', async (req, res) => {
     try {
         const [categories] = await query(`
-            SELECT item_name as value, item_name as label
-            FROM lookup_lists
-            WHERE category = 'Asset Category' AND is_active = 1
-            ORDER BY sort_order
+            SELECT li.value, li.value as label
+            FROM lookup_items li
+            INNER JOIN lookup_categories lc ON li.category_id = lc.id
+            WHERE lc.name = 'asset_categories' AND li.is_active = 1
+            ORDER BY li.display_order, li.value
         `);
         
         res.status(200).json({
@@ -93,7 +94,7 @@ router.get('/:id', async (req, res) => {
         const [assets] = await query(`
             SELECT 
                 fa.*,
-                u.name as organization_name
+                u.full_name as organization_name
             FROM fixed_assets fa
             LEFT JOIN users u ON fa.organization_id = u.id
             WHERE fa.id = ?
@@ -201,7 +202,7 @@ router.post('/', async (req, res) => {
             assigned_to || null,
             notes || null,
             depreciation_rate || 0.00,
-            current_value || purchase_price || null,
+            current_value || purchase_price || null, // Set current_value to purchase_price if not provided
             last_maintenance_date || null,
             next_maintenance_date || null
         ]);

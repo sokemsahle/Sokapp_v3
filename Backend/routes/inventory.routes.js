@@ -315,7 +315,8 @@ router.put('/request/:id/approve', async (req, res) => {
                 i.name as item_name,
                 i.category,
                 i.quantity as current_stock,
-                i.unit
+                i.unit,
+                i.is_returnable
             FROM inventory_requests ir
             JOIN inventory i ON ir.inventory_id = i.id
             WHERE ir.id = ? AND ir.status = 'pending'
@@ -337,21 +338,74 @@ router.put('/request/:id/approve', async (req, res) => {
         
         const finalQuantity = quantity_approved || request.quantity_requested;
         
-        // Update the request (trigger will handle stock reduction and transaction logging)
-        await connection.execute(`
-            UPDATE inventory_requests 
-            SET 
-                status = ?,
-                quantity_approved = ?,
-                approved_by = ?,
-                approved_by_name = ?,
-                approval_date = CURRENT_TIMESTAMP,
-                notified = 1
-            WHERE id = ?
-        `, [finalStatus, finalQuantity, approved_by || null, approved_by_name || null, id]);
+        // Check if this is a returnable item request
+        if (request.is_returnable) {
+            // For returnable items, create a checkout transaction instead of reducing stock
+            await connection.execute(`
+                UPDATE inventory_requests 
+                SET 
+                    status = ?,
+                    quantity_approved = ?,
+                    approved_by = ?,
+                    approved_by_name = ?,
+                    approval_date = CURRENT_TIMESTAMP,
+                    notified = 1
+                WHERE id = ?
+            `, [finalStatus, finalQuantity, approved_by || null, approved_by_name || null, id]);
+            
+            // Create a returnable transaction (checkout)
+            const [transactionResult] = await connection.execute(`
+                INSERT INTO returnable_transactions (
+                    inventory_id, user_id, borrower_name, borrower_email,
+                    borrower_department, quantity, status, checkout_date,
+                    expected_return_date, notes, created_by
+                ) VALUES (?, ?, ?, ?, ?, ?, 'checked_out', NOW(), ?, ?, ?)
+            `, [
+                request.inventory_id,
+                request.requestor_user_id || null,
+                request.requestor_name,
+                request.requestor_email,
+                request.requestor_department || null,
+                finalQuantity,
+                request.expected_return_date || null,
+                `Approved via request #${id}`,
+                approved_by || null
+            ]);
+            
+            // Trigger will automatically update inventory quantity
+            
+            res.status(200).json({ 
+                success: true, 
+                message: `Request ${finalStatus.replace('_', ' ')} successfully. Item checked out automatically.`,
+                status: finalStatus,
+                quantity_approved: finalQuantity,
+                transaction_id: transactionResult.insertId
+            });
+        } else {
+            // For regular items, update the request (trigger will handle stock reduction)
+            await connection.execute(`
+                UPDATE inventory_requests 
+                SET 
+                    status = ?,
+                    quantity_approved = ?,
+                    approved_by = ?,
+                    approved_by_name = ?,
+                    approval_date = CURRENT_TIMESTAMP,
+                    notified = 1
+                WHERE id = ?
+            `, [finalStatus, finalQuantity, approved_by || null, approved_by_name || null, id]);
+            
+            res.status(200).json({ 
+                success: true, 
+                message: `Request ${finalStatus.replace('_', ' ')} successfully. Stock updated automatically.`,
+                status: finalStatus,
+                quantity_approved: finalQuantity
+            });
+        }
         
         // Send approval confirmation email to requestor
         if (process.env.BREVO_API_KEY) {
+            const isReturnable = request.is_returnable;
             await axios.post(
                 'https://api.brevo.com/v3/smtp/email',
                 {
@@ -360,7 +414,9 @@ router.put('/request/:id/approve', async (req, res) => {
                         email: "noreply@sokapp.online" 
                     },
                     to: [{ email: request.requestor_email, name: request.requestor_name }],
-                    subject: `✅ Inventory Request #${id} Approved`,
+                    subject: isReturnable 
+                        ? `✅ Returnable Item Request #${id} Approved - Checkout Ready`
+                        : `✅ Inventory Request #${id} Approved`,
                     htmlContent: `
                         <h2>Your Inventory Request Has Been Approved!</h2>
                         <p><strong>Request ID:</strong> #${id}</p>
@@ -369,12 +425,14 @@ router.put('/request/:id/approve', async (req, res) => {
                         <h3>Approved Items:</h3>
                         <p><strong>Item:</strong> ${request.item_name || 'Inventory Item'} ${request.category ? '(' + request.category + ')' : ''}</p>
                         <p><strong>Quantity Approved:</strong> ${finalQuantity} ${request.unit || 'units'}</p>
+                        ${isReturnable ? '<p style="background: #fff3cd; padding: 10px; border-left: 4px solid #ffc107;"><strong>📦 Returnable Item:</strong> This item has been checked out to you. Please return it by the expected return date.</p>' : ''}
+                        ${request.expected_return_date ? `<p><strong>Expected Return Date:</strong> ${new Date(request.expected_return_date).toLocaleDateString()}</p>` : ''}
                         ${finalStatus === 'partially_approved' ? `<p style="color: orange;"><em>Note: You requested ${request.quantity_requested}, but only ${finalQuantity} were approved due to stock availability.</em></p>` : ''}
                         <hr>
                         <p><strong>Approved by:</strong> ${approved_by_name || 'Inventory Manager'}</p>
                         <p><strong>Approval Date:</strong> ${new Date().toLocaleDateString()}</p>
                         <hr>
-                        <p style="color: #666; font-size: 12px;">You can collect your items from the inventory location.</p>
+                        <p style="color: #666; font-size: 12px;">${isReturnable ? 'You can collect your item from the inventory location. Remember to return it on time!' : 'You can collect your items from the inventory location.'}</p>
                     `
                 },
                 {
@@ -390,13 +448,6 @@ router.put('/request/:id/approve', async (req, res) => {
                 }
             });
         }
-        
-        res.status(200).json({ 
-            success: true, 
-            message: `Request ${finalStatus.replace('_', ' ')} successfully. Stock updated automatically.`,
-            status: finalStatus,
-            quantity_approved: finalQuantity
-        });
     } catch (error) {
         console.error('Error approving request:', error);
         res.status(500).json({ 

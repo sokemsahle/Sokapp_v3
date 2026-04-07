@@ -138,10 +138,12 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData = null }) => {
   // Function to fetch employee documents
   const fetchEmployeeDocuments = async (employeeId) => {
     try {
+      console.log('[Fetch] Fetching documents for employee:', employeeId);
       const response = await fetch(`http://localhost:5000/api/employees/${employeeId}/documents`);
       const result = await response.json();
       
       if (result.success) {
+        console.log('[Fetch] Documents received:', result.documents);
         // Update the documents in form data
         setFormData(prev => ({
           ...prev,
@@ -154,9 +156,11 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData = null }) => {
             notes: doc.notes,
             uploadDate: doc.upload_date,
             fileName: doc.file_name,
-            filePath: doc.file_path
+            // Try 'file' first (new), then 'file_path' (old) for backwards compatibility
+            file: doc.file || doc.file_path
           }))
         }));
+        console.log('[Fetch] Documents mapped to state');
       } else {
         console.error('Failed to fetch documents:', result.message);
       }
@@ -166,31 +170,115 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData = null }) => {
   };
 
   // Function to download a document
-  const downloadDocument = async (document) => {
+  const downloadDocument = async (doc) => {
     try {
-      // If the document has a file path, construct the full URL to download it
-      if (document.filePath) {
-        const downloadUrl = `http://localhost:5000${document.filePath}`;
-        window.open(downloadUrl, '_blank');
+      console.log('[Download] Attempting to download:', doc);
+      console.log('[Download] File type:', typeof doc.file);
+      console.log('[Download] File length:', doc.file ? doc.file.length : 0);
+      console.log('[Download] File value (first 100 chars):', doc.file ? doc.file.substring(0, 100) : 'NULL');
+      
+      // Check if file exists
+      if (!doc.file) {
+        console.error('[Download Error] Document has no file:', doc);
+        alert(`Document "${doc.name}" has no file attached. This may be an old record that needs to be deleted.`);
+        return;
+      }
+      
+      // If it's a Base64 string (from database)
+      if (typeof doc.file === 'string' && doc.file.startsWith('data:')) {
+        console.log('[Download] Downloading Base64 file');
+        
+        try {
+          // Convert Base64 to Blob WITHOUT using fetch
+          const commaIndex = doc.file.indexOf(',');
+          if (commaIndex === -1) {
+            throw new Error('Invalid data URL format - missing comma separator');
+          }
+          
+          const base64Data = doc.file.substring(commaIndex + 1);
+          const mimeType = doc.file.substring(5, commaIndex).split(';')[0];
+          
+          console.log('[Download] MIME type:', mimeType);
+          console.log('[Download] Base64 data length:', base64Data.length);
+          
+          // Validate Base64 string (remove whitespace and check)
+          const cleanBase64 = base64Data.replace(/\s/g, '');
+          
+          // Check if it looks like valid Base64
+          if (!/^[A-Za-z0-9+/=]+$/.test(cleanBase64)) {
+            throw new Error('Invalid Base64 characters detected. The file data may be corrupted.');
+          }
+          
+          // Decode Base64 to binary
+          const binaryString = atob(cleanBase64);
+          const byteArray = new Uint8Array(binaryString.length);
+          
+          for (let i = 0; i < binaryString.length; i++) {
+            byteArray[i] = binaryString.charCodeAt(i);
+          }
+          
+          // Create Blob from byte array
+          const blob = new Blob([byteArray], { type: mimeType });
+          
+          // Create blob URL
+          const blobUrl = URL.createObjectURL(blob);
+          
+          // Create and trigger download
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = doc.fileName || `document_${doc.id}`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          // Clean up
+          URL.revokeObjectURL(blobUrl);
+          
+          console.log('[Download] Download initiated successfully');
+        } catch (decodeError) {
+          console.error('[Download] Base64 decode failed:', decodeError);
+          console.error('[Download] Full file data preview:', doc.file.substring(0, 200));
+          
+          // Provide helpful error message
+          if (decodeError.message.includes('not correctly encoded')) {
+            alert(`Failed to decode file. The Base64 data appears to be corrupted or incomplete.\n\nFile size in DB: ${doc.file.length} characters\nExpected: Should start with "data:image/...;base64," followed by valid Base64`);
+          } else {
+            alert('Error downloading file: ' + decodeError.message);
+          }
+          return;
+        }
+      } 
+      // If it's a File object (local, not yet uploaded)
+      else if (doc.file instanceof File || (typeof doc.file === 'object' && doc.file.size)) {
+        console.log('[Download] Downloading local File object:', doc.file.name);
+        const blobUrl = URL.createObjectURL(doc.file);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = doc.name || doc.file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+        console.log('[Download] Download initiated successfully');
       } else {
-        console.error('Document file path not available');
-        alert('Document file not found');
+        console.error('[Download Error] Unknown file type:', typeof doc.file, doc.file);
+        alert(`Cannot download document - file format not recognized.`);
       }
     } catch (error) {
       console.error('Error downloading document:', error);
-      alert('Error downloading document');
+      alert('Error downloading document: ' + error.message);
     }
   };
 
   // Function to remove a document
-  const removeDocument = async (docIndex) => {
+  const removeDocument = async (docIndex, employeeId) => {
     const docToRemove = formData.documents[docIndex];
     
     // If the document exists in the database (has an id), make API call to delete it
     if (docToRemove.id) {
       if (window.confirm('Are you sure you want to delete this document?')) {
         try {
-          const response = await fetch(`http://localhost:5000/api/employees/documents/${docToRemove.id}`, {
+          const response = await fetch(`http://localhost:5000/api/employees/${employeeId}/documents/${docToRemove.id}`, {
             method: 'DELETE'
           });
           
@@ -438,7 +526,7 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData = null }) => {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Hire Date *</label>
+                  <label>Start Date *</label>
                   <input
                     type="date"
                     name="hireDate"
@@ -743,7 +831,7 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData = null }) => {
                           {doc.notes && <p className="doc-notes">{doc.notes}</p>}
                         </div>
                         <div className="doc-actions">
-                          {doc.filePath && (
+                          {doc.file && (
                             <button
                               type="button"
                               className="btn-download-doc"
@@ -753,7 +841,7 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData = null }) => {
                               <i className='bx bxs-download'></i>
                             </button>
                           )}
-                          {doc.file && (
+                          {doc.file && typeof doc.file === 'object' && (
                             <span className="file-name" title={doc.file.name}>
                               <i className='bx bx-paperclip'></i>
                             </span>
@@ -762,7 +850,7 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData = null }) => {
                             type="button"
                             className="btn-remove"
                             title="Remove Document"
-                            onClick={() => removeDocument(index)}
+                            onClick={() => removeDocument(index, initialData?.id)}
                           >
                             <i className='bx bx-trash'></i>
                           </button>

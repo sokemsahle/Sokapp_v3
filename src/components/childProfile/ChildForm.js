@@ -24,6 +24,7 @@ const ChildForm = ({ user, mode, childId, onBack }) => {
     firstName: '',
     middleName: '',
     lastName: '',
+    nickname: '',
     gender: '',
     dateOfBirth: '',
     estimatedAge: '',
@@ -125,6 +126,7 @@ const ChildForm = ({ user, mode, childId, onBack }) => {
         firstName: child.first_name || '',
         middleName: child.middle_name || '',
         lastName: child.last_name || '',
+        nickname: child.nickname || '',
         gender: child.gender || '',
         dateOfBirth: formatDateForInput(child.date_of_birth),
         estimatedAge: child.estimated_age || '',
@@ -162,15 +164,17 @@ const ChildForm = ({ user, mode, childId, onBack }) => {
     
     if (currentStep === 1) {
       if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-      if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
+      if (!formData.middleName.trim()) newErrors.middleName = 'Middle name is required';
       if (!formData.gender) newErrors.gender = 'Gender is required';
       
-      // Validate age based on selected type
-      if (formData.ageType === 'actual' && !formData.dateOfBirth) {
-        newErrors.dateOfBirth = 'Date of birth is required';
+      // Validate age - both options use date picker now
+      if (!formData.dateOfBirth) {
+        newErrors.dateOfBirth = 'Birth date is required';
       }
-      if (formData.ageType === 'estimated' && !formData.estimatedAge) {
-        newErrors.estimatedAge = 'Estimated age is required';
+      
+      // ageType must be selected
+      if (!formData.ageType) {
+        newErrors.ageType = 'Please select Date of Birth type';
       }
     }
     
@@ -369,25 +373,36 @@ const ChildForm = ({ user, mode, childId, onBack }) => {
               </div>
 
               <div className="form-group">
-                <label>Middle Name</label>
+                <label>Middle Name *</label>
                 <input
                   type="text"
                   name="middleName"
                   value={formData.middleName}
                   onChange={handleChange}
+                  className={errors.middleName ? 'error' : ''}
                 />
+                {errors.middleName && <span className="error-text">{errors.middleName}</span>}
               </div>
 
               <div className="form-group">
-                <label>Last Name *</label>
+                <label>Last Name</label>
                 <input
                   type="text"
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
-                  className={errors.lastName ? 'error' : ''}
                 />
-                {errors.lastName && <span className="error-text">{errors.lastName}</span>}
+              </div>
+
+              <div className="form-group">
+                <label>Nickname</label>
+                <input
+                  type="text"
+                  name="nickname"
+                  value={formData.nickname}
+                  onChange={handleChange}
+                  placeholder="e.g., Johnny, MJ, etc."
+                />
               </div>
             </div>
 
@@ -409,7 +424,7 @@ const ChildForm = ({ user, mode, childId, onBack }) => {
               </div>
 
               <div className="form-group full-width">
-                <label>Age Type *</label>
+                <label>Date of Birth Type *</label>
                 <div className="radio-group" style={{ display: 'flex', gap: '20px', marginTop: '8px' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                     <input
@@ -420,7 +435,7 @@ const ChildForm = ({ user, mode, childId, onBack }) => {
                       onChange={handleChange}
                       style={{ cursor: 'pointer' }}
                     />
-                    <span>Actual Age (Date of Birth)</span>
+                    <span>Actual Date of Birth</span>
                   </label>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                     <input
@@ -431,48 +446,29 @@ const ChildForm = ({ user, mode, childId, onBack }) => {
                       onChange={handleChange}
                       style={{ cursor: 'pointer' }}
                     />
-                    <span>Estimated Age</span>
+                    <span>Estimated Age (Birth Date)</span>
                   </label>
                 </div>
               </div>
             </div>
 
             <div className="form-row">
-              {formData.ageType === 'actual' && (
-                <div className="form-group">
-                  <label>Date of Birth *</label>
-                  <input
-                    type="date"
-                    name="dateOfBirth"
-                    value={formData.dateOfBirth}
-                    onChange={handleChange}
-                    className={errors.dateOfBirth ? 'error' : ''}
-                  />
-                  {errors.dateOfBirth && <span className="error-text">{errors.dateOfBirth}</span>}
-                  {formData.dateOfBirth && calculateAgeFromDOB(formData.dateOfBirth) !== null && (
-                    <small style={{ color: 'var(--primary)', fontWeight: '600', marginTop: '5px', display: 'block' }}>
-                      Calculated Age: {calculateAgeFromDOB(formData.dateOfBirth)} years old
-                    </small>
-                  )}
-                </div>
-              )}
-
-              {formData.ageType === 'estimated' && (
-                <div className="form-group">
-                  <label>Estimated Age *</label>
-                  <input
-                    type="number"
-                    name="estimatedAge"
-                    value={formData.estimatedAge}
-                    onChange={handleChange}
-                    min="0"
-                    max="18"
-                    placeholder="Years"
-                    className={errors.estimatedAge ? 'error' : ''}
-                  />
-                  {errors.estimatedAge && <span className="error-text">{errors.estimatedAge}</span>}
-                </div>
-              )}
+              <div className="form-group">
+                <label>Birth Date *</label>
+                <input
+                  type="date"
+                  name="dateOfBirth"
+                  value={formData.dateOfBirth}
+                  onChange={handleChange}
+                  className={errors.dateOfBirth ? 'error' : ''}
+                />
+                {errors.dateOfBirth && <span className="error-text">{errors.dateOfBirth}</span>}
+                {formData.dateOfBirth && calculateAgeFromDOB(formData.dateOfBirth) !== null && (
+                  <small style={{ color: 'var(--primary)', fontWeight: '600', marginTop: '5px', display: 'block' }}>
+                    Calculated Age: {calculateAgeFromDOB(formData.dateOfBirth)} years old
+                  </small>
+                )}
+              </div>
             </div>
           </div>
         )}

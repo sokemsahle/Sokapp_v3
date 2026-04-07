@@ -798,13 +798,13 @@ const UserControle = ({UserControlopen}) => {
                                 <div className="permissions-grid">
                                     {/* Children Permissions Section - Highlighted */}
                                     {groupedPermissions['Children'] && (
-                                        <div className="permission-category children-section" style={{border: '2px solid #4CAF50', borderRadius: '8px', padding: '15px', marginBottom: '15px', backgroundColor: '#f9fff9'}}>
-                                            <h4 style={{color: '#4CAF50', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px'}}>
-                                                <i className='bx bx-user' style={{fontSize: '20px'}}></i>
+                                        <div className="permission-category children-section">
+                                            <h4>
+                                                <i className='bx bx-user'></i>
                                                 👶 Child Management Permissions
                                             </h4>
                                             {groupedPermissions['Children'].map(perm => (
-                                                <label key={perm.id} className="permission-checkbox" style={{backgroundColor: 'white', border: '1px solid #ddd', padding: '8px', borderRadius: '5px', marginBottom: '5px'}}>
+                                                <label key={perm.id} className="permission-checkbox">
                                                     <input
                                                         type="checkbox"
                                                         checked={roleFormData.permission_ids.includes(perm.id)}

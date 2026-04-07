@@ -30,6 +30,9 @@
     margin: 0;
     padding: 0;
 }
+th {
+   padding: 2rem;
+}
 
 /* Set default zoom level to 75% */
 #root {
@@ -3296,7 +3299,7 @@ main .cards .card-item .info p {
 
 .tab-btn.active {
   background-color: var(--primary);
-  color: var(--white);
+  color: var(--light);
 }
 
 .tab-btn .badge {
@@ -3429,6 +3432,41 @@ main .cards .card-item .info p {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+}
+
+.status-badge.status-rejected {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.rejection-note {
+  background-color: #fef2f2;
+  color: #991b1b;
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  display: block;
+  margin-top: 0.25rem;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notification-item.rejected {
+  border-left: 3px solid #dc2626;
+}
+
+.notification-item.rejected:hover {
+  background-color: #fef2f2;
 }
 
 .status-badge.status-complete {

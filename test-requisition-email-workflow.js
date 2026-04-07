@@ -75,7 +75,7 @@ async function testEmailWorkflow() {
     
     // Test 4: Check Brevo API connectivity
     console.log('\n=== Test 4: Testing Brevo API ===');
-    const brevoApiKey = process.env.BREVO_API_KEY || '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';
+    const brevoApiKey = process.env.BREVO_API_KEY || 'your_brevo_api_key_here';
     
     try {
       const testEmailData = {

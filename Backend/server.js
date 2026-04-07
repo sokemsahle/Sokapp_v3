@@ -513,6 +513,174 @@ app.post('/api/employees/:id/upload-photo', upload.single('profilePhoto'), async
     }
 });
 
+// POST upload employee documents
+app.post('/api/employees/:id/documents', upload.single('file'), async (req, res) => {
+    const connection = await mysql.createConnection(dbConfig);
+    try {
+        const { id } = req.params;
+        const { name, type, issue_date, expiry_date, notes } = req.body;
+        
+        // Validate required fields
+        if (!name || !type) {
+            return res.status(400).json({
+                success: false,
+                message: 'Document name and type are required'
+            });
+        }
+
+        // Check if employee exists
+        const [employee] = await connection.execute(
+            'SELECT id FROM employees WHERE id = ?',
+            [id]
+        );
+        
+        if (employee.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Employee not found'
+            });
+        }
+
+        // Prepare document data
+        let fileData = null;
+        let fileName = null;
+        let fileSize = null;
+        let mimeType = null;
+
+        // If file is uploaded, convert to Base64
+        if (req.file) {
+            const base64File = req.file.buffer.toString('base64');
+            mimeType = req.file.mimetype;
+            // Create data URL format: data:mimeType;base64,base64String
+            fileData = `data:${mimeType};base64,${base64File}`;
+            fileName = req.file.originalname;
+            fileSize = req.file.size;
+        }
+
+        // Insert document into database
+        const [result] = await connection.execute(
+            `INSERT INTO employee_documents 
+             (employee_id, name, type, file, file_name, file_size, mime_type, issue_date, expiry_date, notes)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                id,
+                name,
+                type,
+                fileData,
+                fileName,
+                fileSize,
+                mimeType,
+                issue_date || null,
+                expiry_date || null,
+                notes || null
+            ]
+        );
+
+        // Fetch the newly created document
+        const [newDocument] = await connection.execute(
+            'SELECT * FROM employee_documents WHERE id = ?',
+            [result.insertId]
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'Document uploaded successfully',
+            document: newDocument[0]
+        });
+    } catch (error) {
+        console.error('Error uploading document:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to upload document',
+            error: error.message
+        });
+    } finally {
+        await connection.end();
+    }
+});
+
+// GET employee documents
+app.get('/api/employees/:id/documents', async (req, res) => {
+    const connection = await mysql.createConnection(dbConfig);
+    try {
+        const { id } = req.params;
+        
+        // Check if employee exists
+        const [employee] = await connection.execute(
+            'SELECT id FROM employees WHERE id = ?',
+            [id]
+        );
+        
+        if (employee.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Employee not found'
+            });
+        }
+
+        // Fetch all active documents for this employee
+        const [documents] = await connection.execute(
+            'SELECT * FROM employee_documents WHERE employee_id = ? AND is_active = TRUE ORDER BY upload_date DESC',
+            [id]
+        );
+
+        res.status(200).json({
+            success: true,
+            documents: documents
+        });
+    } catch (error) {
+        console.error('Error fetching documents:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch documents',
+            error: error.message
+        });
+    } finally {
+        await connection.end();
+    }
+});
+
+// DELETE employee document
+app.delete('/api/employees/:employeeId/documents/:documentId', async (req, res) => {
+    const connection = await mysql.createConnection(dbConfig);
+    try {
+        const { employeeId, documentId } = req.params;
+        
+        // Check if document exists
+        const [document] = await connection.execute(
+            'SELECT * FROM employee_documents WHERE id = ? AND employee_id = ?',
+            [documentId, employeeId]
+        );
+        
+        if (document.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Document not found'
+            });
+        }
+
+        // Soft delete - set is_active to FALSE
+        await connection.execute(
+            'UPDATE employee_documents SET is_active = FALSE WHERE id = ?',
+            [documentId]
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Document deleted successfully'
+        });
+    } catch (error) {
+        console.error('Error deleting document:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete document',
+            error: error.message
+        });
+    } finally {
+        await connection.end();
+    }
+});
+
 // ==================== ROLE-BASED ACCESS API ====================
 
 // GET employees accessible by a specific role
@@ -1062,6 +1230,12 @@ app.get('/api/requisitions/unsigned', async (req, res) => {
             
             const whereClause = roleConditions.join(' OR ');
             
+            // If no role conditions, return empty array
+            if (!whereClause || whereClause.trim() === '') {
+                console.log('No role conditions matched - returning empty array');
+                return res.status(200).json({ success: true, requisitions: [] });
+            }
+            
             query = `
                 SELECT r.id, r.requestor_name, r.department, r.purpose, r.request_date, r.status, 
                        r.signature_data, r.reviewed_signature, r.approved_signature, r.authorized_signature,
@@ -1072,7 +1246,8 @@ app.get('/api/requisitions/unsigned', async (req, res) => {
                 AND (${whereClause})
                 ORDER BY r.created_at DESC
             `;
-            console.log('Role-specific query:', whereClause);
+            console.log('Role-specific query:', query);
+            console.log('Query params:', [user_id]);
             [rows] = await connection.execute(query, [user_id]);
             console.log('Found', rows.length, 'unseen requisitions for user roles');
         } else {
@@ -1093,6 +1268,12 @@ app.get('/api/requisitions/unsigned', async (req, res) => {
             
             const whereClause = roleConditions.join(' OR ');
             
+            // If no role conditions, return empty array
+            if (!whereClause || whereClause.trim() === '') {
+                console.log('No role conditions matched - returning empty array');
+                return res.status(200).json({ success: true, requisitions: [] });
+            }
+            
             query = `
                 SELECT id, requestor_name, department, purpose, request_date, status, 
                        signature_data, reviewed_signature, approved_signature, authorized_signature,
@@ -1101,6 +1282,7 @@ app.get('/api/requisitions/unsigned', async (req, res) => {
                 WHERE ${whereClause}
                 ORDER BY created_at DESC
             `;
+            console.log('All unsigned query:', query);
             [rows] = await connection.execute(query);
             console.log('Found', rows.length, 'total unsigned requisitions for user roles');
         }
@@ -1209,6 +1391,52 @@ app.get('/api/requisitions/finalized', async (req, res) => {
     }
 });
 
+// GET endpoint to fetch rejected requisitions (for requester notifications)
+app.get('/api/requisitions/rejected', async (req, res) => {
+    const connection = await mysql.createConnection(dbConfig);
+    try {
+        const { email, unseen, user_id } = req.query;
+        
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Email parameter required' });
+        }
+        
+        let query;
+        let rows;
+        
+        if (unseen === 'true' && user_id) {
+            // Only fetch unseen rejected requisitions
+            query = `
+                SELECT r.id, r.requestor_name, r.requestor_email, r.department, r.purpose, r.request_date, 
+                       r.status, r.rejection_note, r.rejected_by, r.rejected_at, r.grand_total, r.created_at 
+                FROM requisitions r
+                LEFT JOIN user_notification_seen uns ON r.id = uns.requisition_id AND uns.user_id = ?
+                WHERE r.requestor_email = ?
+                AND (uns.is_seen = FALSE OR uns.is_seen IS NULL)
+                AND r.status = 'rejected'
+                ORDER BY r.created_at DESC
+            `;
+            [rows] = await connection.execute(query, [user_id, email]);
+        } else {
+            query = `
+                SELECT r.id, r.requestor_name, r.requestor_email, r.department, r.purpose, r.request_date, 
+                       r.status, r.rejection_note, r.rejected_by, r.rejected_at, r.grand_total, r.created_at 
+                FROM requisitions r
+                WHERE r.requestor_email = ? AND r.status = 'rejected'
+                ORDER BY r.created_at DESC
+            `;
+            [rows] = await connection.execute(query, [email]);
+        }
+        
+        res.status(200).json({ success: true, requisitions: rows });
+    } catch (error) {
+        console.error('Error fetching rejected requisitions:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch requisitions', error: error.message });
+    } finally {
+        await connection.end();
+    }
+});
+
 // GET endpoint to fetch requisitions by user email (for standard users)
 app.get('/api/requisitions/my', async (req, res) => {
     const connection = await mysql.createConnection(dbConfig);
@@ -1241,9 +1469,9 @@ app.get('/api/requisition/:id', async (req, res) => {
     const connection = await mysql.createConnection(dbConfig);
     try {
         const requisitionId = req.params.id;
-        const { email } = req.query; // Get user email from query parameter
+        const { email, userId } = req.query; // Get user email from query parameter
         
-        console.log('GET /api/requisition/:id - ID:', requisitionId, 'Email:', email);
+        console.log('GET /api/requisition/:id - ID:', requisitionId, 'Email:', email, 'User ID:', userId);
         
         // Fetch requisition header
         const [requisitionRows] = await connection.execute(
@@ -1258,12 +1486,29 @@ app.get('/api/requisition/:id', async (req, res) => {
         const requisition = requisitionRows[0];
         
         // SECURITY CHECK: Verify email matches requestor_email (unless admin)
-        if (email && email !== requisition.requestor_email) {
+        // First, check if user is admin by looking up their user record
+        let isAdmin = false;
+        if (userId) {
+            const [userRows] = await connection.execute(
+                'SELECT is_admin FROM users WHERE id = ?',
+                [userId]
+            );
+            if (userRows.length > 0) {
+                isAdmin = userRows[0].is_admin === 1 || userRows[0].is_admin === true || userRows[0].is_admin === '1';
+            }
+        }
+        
+        // Allow access if: no email provided OR email matches OR user is admin
+        if (email && email !== requisition.requestor_email && !isAdmin) {
             console.warn('⚠️ Access denied: Email mismatch. Requested by:', email, 'Requisition owner:', requisition.requestor_email);
             return res.status(403).json({ 
                 success: false, 
                 message: 'Access denied: You can only view your own requisitions' 
             });
+        }
+        
+        if (isAdmin && email !== requisition.requestor_email) {
+            console.log('✓ Admin access granted for requisition:', requisitionId);
         }
         
         // Fetch requisition items
@@ -1340,12 +1585,19 @@ app.put('/api/requisition/:id', async (req, res) => {
         console.log('\n=== RECEIVING REQUISITION UPDATE ===');
         console.log('Requisition ID:', requisitionId);
         console.log('Request body keys:', Object.keys(req.body));
-        console.log('reviewedSignature in body:', req.body.reviewedSignature ? 'EXISTS' : 'MISSING');
-        console.log('approvedSignature in body:', req.body.approvedSignature ? 'EXISTS' : 'MISSING');
-        console.log('authorizedSignature in body:', req.body.authorizedSignature ? 'EXISTS' : 'MISSING');
+        console.log('reviewedSignature in body (camelCase):', req.body.reviewedSignature ? 'EXISTS' : 'MISSING');
+        console.log('reviewed_signature in body (snake_case):', req.body.reviewed_signature ? 'EXISTS' : 'MISSING');
+        console.log('approvedSignature in body (camelCase):', req.body.approvedSignature ? 'EXISTS' : 'MISSING');
+        console.log('approved_signature in body (snake_case):', req.body.approved_signature ? 'EXISTS' : 'MISSING');
+        console.log('authorizedSignature in body (camelCase):', req.body.authorizedSignature ? 'EXISTS' : 'MISSING');
+        console.log('authorized_signature in body (snake_case):', req.body.authorized_signature ? 'EXISTS' : 'MISSING');
         console.log('Full request body:', JSON.stringify(req.body, null, 2));
         
-        const { requestor, department, date, description, items, signature, requestedBy, reviewedBy, approvedBy, authorizedBy, approvedSignature, authorizedSignature, reviewedSignature, program_id } = req.body;
+        // Support both camelCase and snake_case for signature fields (frontend compatibility)
+        const { requestor, department, date, description, items, signature, requestedBy, reviewedBy, approvedBy, authorizedBy, program_id } = req.body;
+        const reviewedSignature = req.body.reviewedSignature || req.body.reviewed_signature;
+        const approvedSignature = req.body.approvedSignature || req.body.approved_signature;
+        const authorizedSignature = req.body.authorizedSignature || req.body.authorized_signature;
         
         // Helper function to convert undefined to null
         const toNull = (value) => value !== undefined ? value : null;
@@ -4414,16 +4666,46 @@ app.post('/api/users/upload-profile-picture', upload.single('profilePhoto'), asy
         
         // Check if employee record exists for this user's email
         const [employees] = await connection.execute(
-            'SELECT id, profile_image FROM employees WHERE email = ? COLLATE utf8mb4_unicode_ci',
+            'SELECT id, profile_image FROM employees WHERE email = ?',
             [userEmail]
         );
         
+        // Compress image before storing in database
+        const maxFileSize = 2 * 1024 * 1024; // 2MB limit for database storage
+        
+        let compressedImageBuffer = req.file.buffer;
+        let compressed = false;
+        
+        // Check if image needs compression (simple check - if over 2MB, reject)
+        if (req.file.size > maxFileSize) {
+            return res.status(413).json({
+                success: false,
+                message: 'Image is too large. Maximum allowed size is 2MB. Please choose a smaller image or reduce its dimensions before uploading.',
+                maxSize: '2MB',
+                currentSize: `${(req.file.size / 1024 / 1024).toFixed(2)}MB`
+            });
+        }
+        
         // Convert file to Base64 string for database storage
-        const base64Image = req.file.buffer.toString('base64');
+        const base64Image = compressedImageBuffer.toString('base64');
         const mimeType = req.file.mimetype;
         
         // Create data URL format: data:mimeType;base64,base64String
         const imageData = `data:${mimeType};base64,${base64Image}`;
+        
+        // Check if the final Base64 string is too large for MySQL
+        // Base64 increases size by ~33%, so 2MB file becomes ~2.67MB
+        const estimatedPacketSize = Buffer.byteLength(imageData, 'utf8');
+        const mysqlMaxPacket = 4 * 1024 * 1024; // 4MB safety limit (MySQL default is often 4MB or 16MB)
+        
+        if (estimatedPacketSize > mysqlMaxPacket) {
+            return res.status(413).json({
+                success: false,
+                message: `Image is too large for database storage after encoding (${(estimatedPacketSize / 1024 / 1024).toFixed(2)}MB). Maximum allowed size is ${(mysqlMaxPacket / 1024 / 1024).toFixed(0)}MB. Please choose a smaller image.`,
+                maxSize: '2MB',
+                encodedSize: `${(estimatedPacketSize / 1024 / 1024).toFixed(2)}MB`
+            });
+        }
         
         if (employees.length > 0) {
             // Update existing employee record
@@ -4459,12 +4741,24 @@ app.post('/api/users/upload-profile-picture', upload.single('profilePhoto'), asy
             data: {
                 profileImage: imageData,
                 originalName: req.file.originalname,
-                size: req.file.size,
-                mimeType: mimeType
+                size: compressedImageBuffer.length,
+                mimeType: mimeType,
+                compressed: compressed
             }
         });
     } catch (error) {
         console.error('Error uploading profile picture:', error);
+        
+        // Handle MySQL packet size error specifically
+        if (error.code === 'ER_NET_PACKET_TOO_LARGE' || error.errno === 1153) {
+            return res.status(413).json({
+                success: false,
+                message: 'Image is too large for database storage. Maximum allowed size is 2MB. Please choose a smaller image or reduce its dimensions.',
+                maxSize: '2MB',
+                details: 'The image exceeds MySQL\'s maximum packet size limit.'
+            });
+        }
+        
         res.status(500).json({
             success: false,
             message: 'Failed to upload profile picture',
@@ -4652,19 +4946,31 @@ app.put('/api/appointments/:id', async (req, res) => {
         // Set default reminder time if not provided (1 minute)
         const reminderTime = reminder_minutes_before !== undefined ? parseInt(reminder_minutes_before) : 1;
         
-        // Update appointment
+        // Get current appointment to preserve existing values for missing fields
+        const [currentRows] = await connection.execute('SELECT * FROM appointments WHERE id = ?', [id]);
+        const currentAppointment = currentRows.length > 0 ? currentRows[0] : null;
+        
+        // Ensure all fields have proper values
+        // For optional fields not provided, use current DB values or defaults
+        const safeDescription = description !== undefined ? (description || null) : (currentAppointment?.description || null);
+        const safeLocation = location !== undefined ? (location || null) : (currentAppointment?.location || null);
+        const safeStatus = status !== undefined ? (status || 'pending') : (currentAppointment?.status || 'scheduled');
+        
+        const primaryAttendeeId = currentAppointment?.attendee_user_id || attendees[0];
+        
+        // Update appointment - keep the original primary attendee
         const sql = `UPDATE appointments 
-                     SET title=?, description=?, start_datetime=?, end_datetime=?, location=?, status=?, reminder_minutes_before=?
+                     SET title=?, description=?, start_datetime=?, end_datetime=?, location=?, status=?, reminder_minutes_before=?, attendee_user_id=?
                      WHERE id=?`;
         
-        await connection.execute(sql, [title, description, start_datetime, end_datetime, location, status, reminderTime, id]);
+        await connection.execute(sql, [title, safeDescription, start_datetime, end_datetime, safeLocation, safeStatus, reminderTime, primaryAttendeeId, id]);
         
-        // Update attendees: delete old ones and insert new ones
+        // Update attendees in junction table: delete old ones and insert new ones
         const deleteSql = 'DELETE FROM appointment_attendees WHERE appointment_id = ?';
         await connection.execute(deleteSql, [id]);
         
         if (attendees.length > 0) {
-            // Use individual inserts for each attendee
+            // Insert all attendees into junction table
             for (const attendeeId of attendees) {
                 const insertAttendeeSql = 'INSERT INTO appointment_attendees (appointment_id, user_id) VALUES (?, ?)';
                 await connection.execute(insertAttendeeSql, [id, attendeeId]);
@@ -4674,6 +4980,13 @@ app.put('/api/appointments/:id', async (req, res) => {
         res.json({ success: true, message: 'Appointment updated successfully' });
     } catch (error) {
         console.error('Error updating appointment:', error);
+        console.error('Error details:', {
+            message: error.message,
+            sqlMessage: error.sqlMessage,
+            sqlState: error.sqlState,
+            errno: error.errno,
+            stack: error.stack
+        });
         res.status(500).json({ success: false, message: 'Failed to update appointment' });
     } finally {
         await connection.end();

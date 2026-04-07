@@ -44,7 +44,8 @@ const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission =
     inventory_id: '',
     quantity_needed: '',
     reason: '',
-    urgency: 'normal'
+    urgency: 'normal',
+    expected_return_date: ''
   });
 
   // Fetch inventory data
@@ -157,6 +158,10 @@ const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission =
   const handleRequestItem = async (e) => {
     e.preventDefault();
     try {
+      // Get selected item to check if it's returnable
+      const selectedItem = items.find(item => item.id == requestFormData.inventory_id);
+      const isReturnable = selectedItem && selectedItem.is_returnable;
+      
       // Map quantity_needed to quantity_requested and add user details
       const requestData = {
         inventory_id: requestFormData.inventory_id,
@@ -166,7 +171,9 @@ const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission =
         requestor_name: user?.full_name || user?.name || 'Unknown User',
         requestor_email: user?.email || 'unknown@example.com',
         requestor_department: user?.department || null,
-        user_id: user?.id
+        user_id: user?.id,
+        is_returnable: isReturnable,
+        expected_return_date: isReturnable ? (requestFormData.expected_return_date || null) : null
       };
 
       console.log('Submitting request with data:', requestData);
@@ -179,12 +186,16 @@ const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission =
       const result = await response.json();
       console.log('Server response:', result);
       if (result.success) {
-        alert('Item request submitted successfully!');
+        const message = isReturnable 
+          ? 'Item request submitted successfully! This item will be checked out to you upon approval.'
+          : 'Item request submitted successfully!';
+        alert(message);
         setRequestFormData({
           inventory_id: '',
           quantity_needed: '',
           reason: '',
-          urgency: 'normal'
+          urgency: 'normal',
+          expected_return_date: ''
         });
       } else {
         alert('Error: ' + (result.message || 'Failed to submit request'));
@@ -304,9 +315,9 @@ const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission =
       supplier: item.supplier || '',
       cost_per_unit: item.cost_per_unit || '',
       program_id: item.program_id || '',
-      has_expiry_date: item.has_expiry_date ? 'yes' : 'no',
+      has_expiry_date: item.has_expiry_date === 1 || item.has_expiry_date === true,
       expiry_date: item.expiry_date || '',
-      is_returnable: item.is_returnable ? 'yes' : 'no'
+      is_returnable: item.is_returnable === 1 || item.is_returnable === true
     });
     setShowModal(true);
   };
@@ -454,13 +465,14 @@ const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission =
                   <select 
                     name="inventory_id" 
                     value={requestFormData.inventory_id}
-                    onChange={(e) => setRequestFormData(prev => ({ ...prev, inventory_id: e.target.value }))}
+                    onChange={(e) => setRequestFormData(prev => ({ ...prev, inventory_id: e.target.value, expected_return_date: '' }))}
                     required
                   >
                     <option value="">-- Select an available item --</option>
                     {(items || []).filter(item => item.quantity > 0).map(item => (
                       <option key={item.id} value={item.id}>
                         {item.name} - {item.category} (Available: {item.quantity} {item.unit})
+                        {item.is_returnable ? ' [RETURNABLE]' : ''}
                       </option>
                     ))}
                   </select>
@@ -489,6 +501,21 @@ const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission =
                     <option value="urgent">Urgent</option>
                   </select>
                 </div>
+                {requestFormData.inventory_id && items.find(item => item.id == requestFormData.inventory_id)?.is_returnable && (
+                  <div className="form-group full-width">
+                    <label>Expected Return Date (Optional)</label>
+                    <input 
+                      type="date" 
+                      name="expected_return_date" 
+                      value={requestFormData.expected_return_date}
+                      onChange={(e) => setRequestFormData(prev => ({ ...prev, expected_return_date: e.target.value }))}
+                      min={new Date().toISOString().split('T')[0]}
+                    />
+                    <small style={{ color: '#666', marginTop: '4px', display: 'block' }}>
+                      ℹ️ This item is returnable. Please indicate when you plan to return it (optional).
+                    </small>
+                  </div>
+                )}
                 <div className="form-group full-width">
                   <label>Reason *</label>
                   <textarea 

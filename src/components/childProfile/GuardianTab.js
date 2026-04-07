@@ -252,7 +252,7 @@ const GuardianTab = ({ childId, user }) => {
                     <option value="Uncle">Uncle</option>
                     <option value="Sibling">Sibling</option>
                     <option value="Guardian">Guardian</option>
-                    <option value="Other">Other</option>
+                    
                   </select>
                 </div>
               </div>

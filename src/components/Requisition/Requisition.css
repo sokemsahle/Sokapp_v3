@@ -394,12 +394,32 @@
     flex-direction: column;
 }
 
+/* Ensure canvas fills container properly */
+.signature-pad-container canvas {
+    width: 100% !important;
+    height: 150px !important;
+    display: block;
+}
+
 .sigCanvas {
     width: 100%;
     height: 150px;
     background-color: var(--white);
     border-radius: 8px 8px 0 0;
     cursor: crosshair;
+    touch-action: none; /* Prevent scrolling while drawing */
+    image-rendering: pixelated; /* Improve drawing precision */
+    display: block;
+}
+
+/* Dark mode signature styles */
+body.dark .sigCanvas {
+    background-color: #1a1a1a !important;
+}
+
+body.dark .sig-controls {
+    background: #2a2a2a;
+    border-top-color: #444;
 }
 
 /* Controls inside the signature area */

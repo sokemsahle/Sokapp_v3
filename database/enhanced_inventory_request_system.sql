@@ -66,32 +66,37 @@ BEGIN
   -- Only process if status changed to approved or partially_approved
   IF NEW.status IN ('approved', 'partially_approved') AND OLD.status = 'pending' THEN
     
-    -- Reduce inventory quantity (use quantity_approved if partial approval)
-    UPDATE inventory 
-    SET quantity = quantity - COALESCE(NEW.quantity_approved, NEW.quantity_requested),
-        updated_at = CURRENT_TIMESTAMP
-    WHERE id = NEW.inventory_id;
-    
-    -- Create transaction log entry
-    INSERT INTO inventory_transactions (
-      inventory_id,
-      transaction_type,
-      quantity_change,
-      previous_quantity,
-      new_quantity,
-      reason,
-      notes,
-      created_by
-    ) VALUES (
-      NEW.inventory_id,
-      'OUT',
-      -COALESCE(NEW.quantity_approved, NEW.quantity_requested),
-      (SELECT quantity FROM inventory WHERE id = NEW.inventory_id) + COALESCE(NEW.quantity_approved, NEW.quantity_requested),
-      (SELECT quantity FROM inventory WHERE id = NEW.inventory_id),
-      CONCAT('Request #', NEW.id, ' - ', NEW.requestor_name),
-      CONCAT('Approved by: ', IFNULL(NEW.approved_by_name, 'System')),
-      NEW.approved_by
-    );
+    -- Check if the item is returnable
+    -- If returnable, skip stock reduction here (it will be handled by returnable_transactions trigger)
+    IF (SELECT is_returnable FROM inventory WHERE id = NEW.inventory_id) = 0 THEN
+      
+      -- Reduce inventory quantity (use quantity_approved if partial approval)
+      UPDATE inventory 
+      SET quantity = quantity - COALESCE(NEW.quantity_approved, NEW.quantity_requested),
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = NEW.inventory_id;
+      
+      -- Create transaction log entry
+      INSERT INTO inventory_transactions (
+        inventory_id,
+        transaction_type,
+        quantity_change,
+        previous_quantity,
+        new_quantity,
+        reason,
+        notes,
+        created_by
+      ) VALUES (
+        NEW.inventory_id,
+        'OUT',
+        -COALESCE(NEW.quantity_approved, NEW.quantity_requested),
+        (SELECT quantity FROM inventory WHERE id = NEW.inventory_id) + COALESCE(NEW.quantity_approved, NEW.quantity_requested),
+        (SELECT quantity FROM inventory WHERE id = NEW.inventory_id),
+        CONCAT('Request #', NEW.id, ' - ', NEW.requestor_name),
+        CONCAT('Approved by: ', IFNULL(NEW.approved_by_name, 'System')),
+        NEW.approved_by
+      );
+    END IF;
   END IF;
 END//
 

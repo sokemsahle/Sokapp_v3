@@ -8,7 +8,8 @@ const LookupEditor = ({ user }) => {
         departments: [],
         positions: [],
         employeeStatuses: ['Active', 'Inactive', 'Former Employee'],
-        inventoryCategories: []
+        inventoryCategories: [],
+        assetCategories: []
     });
     const [newItem, setNewItem] = useState('');
     const [loading, setLoading] = useState(false);
@@ -29,7 +30,8 @@ const LookupEditor = ({ user }) => {
                     departments: result.departments || [],
                     positions: result.positions || [],
                     employeeStatuses: result.employeeStatuses || ['Active', 'Inactive', 'Former Employee'],
-                    inventoryCategories: result.inventoryCategories || []
+                    inventoryCategories: result.inventoryCategories || [],
+                    assetCategories: result.assetCategories || []
                 });
             }
         } catch (error) {
@@ -136,7 +138,8 @@ const LookupEditor = ({ user }) => {
         { id: 'departments', label: 'Departments', icon: 'bx bx-building' },
         { id: 'positions', label: 'Positions', icon: 'bx bx-briefcase' },
         { id: 'employeeStatuses', label: 'Employee Statuses', icon: 'bx bx-user-circle' },
-        { id: 'inventoryCategories', label: 'Inventory Categories', icon: 'bx bx-package' }
+        { id: 'inventoryCategories', label: 'Inventory Categories', icon: 'bx bx-package' },
+        { id: 'assetCategories', label: 'Asset Categories', icon: 'bx bx-building-house' }
     ];
 
     return (
@@ -173,6 +176,7 @@ const LookupEditor = ({ user }) => {
                             {activeCategory === 'positions' && 'Manage job titles and positions'}
                             {activeCategory === 'employeeStatuses' && 'Manage employee status options'}
                             {activeCategory === 'inventoryCategories' && 'Manage inventory item categories'}
+                            {activeCategory === 'assetCategories' && 'Manage fixed asset categories for organization resources'}
                         </p>
                     </div>
 
@@ -185,7 +189,7 @@ const LookupEditor = ({ user }) => {
                                     value={newItem}
                                     onChange={(e) => setNewItem(e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && handleAddItem()}
-                                    placeholder={`Enter new ${activeCategory === 'inventoryCategories' ? 'category' : activeCategory.slice(0, -1)}`}
+                                    placeholder={`Enter new ${activeCategory === 'inventoryCategories' || activeCategory === 'assetCategories' ? 'category' : activeCategory.slice(0, -1)}`}
                                     className="lookup-input"
                                 />
                                 <button
@@ -222,7 +226,7 @@ const LookupEditor = ({ user }) => {
                         {lookupData[activeCategory].length === 0 && (
                             <div className="no-items-message">
                                 <i className='bx bx-info-circle'></i>
-                                <p>No items found. Add your first {activeCategory === 'inventoryCategories' ? 'category' : activeCategory.slice(0, -1)} above.</p>
+                                <p>No items found. Add your first {activeCategory === 'inventoryCategories' || activeCategory === 'assetCategories' ? 'category' : activeCategory.slice(0, -1)} above.</p>
                             </div>
                         )}
                     </div>
@@ -237,6 +241,7 @@ const LookupEditor = ({ user }) => {
                                 {activeCategory === 'positions' && 'These positions will be available in the Employee Form position dropdown.'}
                                 {activeCategory === 'employeeStatuses' && 'These status options control the employee lifecycle states (Active, Inactive, Former Employee).'}
                                 {activeCategory === 'inventoryCategories' && 'These categories will appear in the Inventory Form when adding or editing inventory items.'}
+                                {activeCategory === 'assetCategories' && 'These categories will appear in the Fixed Assets Form when adding or editing organization fixed assets.'}
                             </p>
                         </div>
                     </div>

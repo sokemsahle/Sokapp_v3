@@ -7,8 +7,11 @@ const FixedAssetsManager = ({ user }) => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
+    const [showAssetForm, setShowAssetForm] = useState(false);
     const [showMaintenanceForm, setShowMaintenanceForm] = useState(false);
     const [selectedAssetForMaintenance, setSelectedAssetForMaintenance] = useState(null);
+    const [expandedAssetId, setExpandedAssetId] = useState(null);
+    const [maintenanceLogs, setMaintenanceLogs] = useState({});
     const [formData, setFormData] = useState({
         asset_name: '',
         asset_category: '',
@@ -83,7 +86,7 @@ const FixedAssetsManager = ({ user }) => {
                 organization_id: user?.id || user?.user_id || 1,
                 ...formData,
                 purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
-                current_value: formData.current_value ? parseFloat(formData.current_value) : null,
+                current_value: formData.current_value ? parseInt(formData.current_value) : null,
                 depreciation_rate: formData.depreciation_rate ? parseFloat(formData.depreciation_rate) : 0,
                 warranty_period_months: formData.warranty_period_months ? parseInt(formData.warranty_period_months) : null
             };
@@ -132,7 +135,7 @@ const FixedAssetsManager = ({ user }) => {
             depreciation_rate: asset.depreciation_rate || 0,
             current_value: asset.current_value || ''
         });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setShowAssetForm(true);
     };
 
     const handleDelete = async (assetId) => {
@@ -166,6 +169,40 @@ const FixedAssetsManager = ({ user }) => {
         setSelectedAssetForMaintenance(asset);
         setShowMaintenanceForm(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const toggleMaintenanceLog = async (assetId) => {
+        if (expandedAssetId === assetId) {
+            setExpandedAssetId(null);
+            return;
+        }
+        
+        // Fetch maintenance logs if not already loaded
+        if (!maintenanceLogs[assetId]) {
+            try {
+                const response = await fetch(API_CONFIG.getUrl(`/api/fixed-assets/${assetId}`));
+                const result = await response.json();
+                if (result.success) {
+                    setMaintenanceLogs(prev => ({
+                        ...prev,
+                        [assetId]: result.data.maintenance_history || []
+                    }));
+                }
+            } catch (error) {
+                console.error('Error fetching maintenance logs:', error);
+            }
+        }
+        setExpandedAssetId(assetId);
+    };
+
+    const getMaintenanceTypeBadgeClass = (type) => {
+        switch(type) {
+            case 'routine': return 'badge-info';
+            case 'repair': return 'badge-warning';
+            case 'inspection': return 'badge-success';
+            case 'replacement': return 'badge-danger';
+            default: return '';
+        }
     };
 
     const resetForm = () => {
@@ -218,28 +255,46 @@ const FixedAssetsManager = ({ user }) => {
             
             {message && <div className="message-banner">{message}</div>}
             
-            {/* Maintenance Log Form */}
-            {showMaintenanceForm && selectedAssetForMaintenance && (
-                <MaintenanceLogForm 
-                    asset={selectedAssetForMaintenance}
-                    onCancel={() => {
-                        setShowMaintenanceForm(false);
-                        setSelectedAssetForMaintenance(null);
+            {/* Add Asset Button */}
+            <div className="action-bar" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h4 style={{ margin: 0 }}>Fixed Assets ({assets.length})</h4>
+                <button 
+                    className="btn-primary"
+                    onClick={() => {
+                        resetForm();
+                        setShowAssetForm(true);
                     }}
-                    onSuccess={() => {
-                        setShowMaintenanceForm(false);
-                        setSelectedAssetForMaintenance(null);
-                        fetchAssets();
-                        setMessage('Maintenance log added successfully!');
-                        setTimeout(() => setMessage(''), 3000);
-                    }}
-                />
-            )}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                    <i className='bx bx-plus'></i> Add New Fixed Asset
+                </button>
+            </div>
             
-            {/* Add/Edit Asset Form */}
-            <div className="resource-form-panel">
-                <h4>{editingAsset ? 'Edit Fixed Asset' : 'Add New Fixed Asset'}</h4>
-                <form onSubmit={handleSubmit} className="resource-form">
+            {/* Asset Form Modal Popup */}
+            {showAssetForm && (
+                <div className="modal-overlay asset-form-modal" onClick={(e) => {
+                    if (e.target === e.currentTarget) {
+                        setShowAssetForm(false);
+                        resetForm();
+                    }
+                }}>
+                    <div className="modal-content modal-content-large">
+                        <div className="modal-header">
+                            <h4>
+                                <i className='bx bx-store'></i> {editingAsset ? 'Edit Fixed Asset' : 'Add New Fixed Asset'}
+                            </h4>
+                            <button 
+                                className="modal-close"
+                                onClick={() => {
+                                    setShowAssetForm(false);
+                                    resetForm();
+                                }}
+                            >
+                                <i className='bx bx-x'></i>
+                            </button>
+                        </div>
+                        <div className="asset-form-content">
+                            <form onSubmit={handleSubmit} className="resource-form">
                     <div className="form-row">
                         <div className="form-group">
                             <label htmlFor="asset_name">Asset Name *</label>
@@ -329,7 +384,7 @@ const FixedAssetsManager = ({ user }) => {
                         </div>
                         
                         <div className="form-group">
-                            <label htmlFor="purchase_price">Purchase Price ($)</label>
+                            <label htmlFor="purchase_price">Purchase Price (Birr)</label>
                             <input
                                 type="number"
                                 id="purchase_price"
@@ -426,14 +481,14 @@ const FixedAssetsManager = ({ user }) => {
 
                     <div className="form-row">
                         <div className="form-group">
-                            <label htmlFor="current_value">Current Value ($)</label>
+                            <label htmlFor="current_value">Amount Available</label>
                             <input
                                 type="number"
                                 id="current_value"
                                 value={formData.current_value}
                                 onChange={(e) => setFormData({ ...formData, current_value: e.target.value })}
-                                placeholder="Current market value"
-                                step="0.01"
+                                placeholder="e.g., 10, 50, 100"
+                                step="1"
                                 min="0"
                             />
                         </div>
@@ -468,15 +523,64 @@ const FixedAssetsManager = ({ user }) => {
                             <i className={`bx ${loading ? 'bx-loader-alt bx-spin' : editingAsset ? 'bx-save' : 'bx-plus'}`}></i>
                             {loading ? 'Saving...' : editingAsset ? 'Update Asset' : 'Add Asset'}
                         </button>
-                        {editingAsset && (
-                            <button type="button" className="btn-secondary" onClick={resetForm}>
-                                <i className='bx bx-x'></i> Cancel
-                            </button>
-                        )}
+                        <button 
+                            type="button" 
+                            className="btn-secondary" 
+                            onClick={() => {
+                                setShowAssetForm(false);
+                                resetForm();
+                            }}
+                        >
+                            <i className='bx bx-x'></i> Cancel
+                        </button>
                     </div>
                 </form>
-            </div>
-
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            {/* Maintenance Log Modal Popup */}
+            {showMaintenanceForm && selectedAssetForMaintenance && (
+                <div className="modal-overlay" onClick={(e) => {
+                    if (e.target === e.currentTarget) {
+                        setShowMaintenanceForm(false);
+                        setSelectedAssetForMaintenance(null);
+                    }
+                }}>
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h4>
+                                <i className='bx bx-wrench'></i> Add Maintenance Log - {selectedAssetForMaintenance.asset_name}
+                            </h4>
+                            <button 
+                                className="modal-close"
+                                onClick={() => {
+                                    setShowMaintenanceForm(false);
+                                    setSelectedAssetForMaintenance(null);
+                                }}
+                            >
+                                <i className='bx bx-x'></i>
+                            </button>
+                        </div>
+                        <MaintenanceLogForm 
+                            asset={selectedAssetForMaintenance}
+                            onCancel={() => {
+                                setShowMaintenanceForm(false);
+                                setSelectedAssetForMaintenance(null);
+                            }}
+                            onSuccess={() => {
+                                setShowMaintenanceForm(false);
+                                setSelectedAssetForMaintenance(null);
+                                fetchAssets();
+                                setMessage('Maintenance log added successfully!');
+                                setTimeout(() => setMessage(''), 3000);
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
+            
             {/* Assets List */}
             <div className="resource-list-panel">
                 <h4>Fixed Assets ({assets.length})</h4>
@@ -539,14 +643,14 @@ const FixedAssetsManager = ({ user }) => {
                                     <div className="asset-value">
                                         {asset.purchase_price && (
                                             <div className="value-item">
-                                                <span className="label">Purchase:</span>
-                                                <span className="value">${parseFloat(asset.purchase_price).toFixed(2)}</span>
+                                                <span className="label">Purchase Price:</span>
+                                                <span className="value">{parseFloat(asset.purchase_price).toFixed(2)} Birr</span>
                                             </div>
                                         )}
                                         {asset.current_value && (
                                             <div className="value-item highlight">
-                                                <span className="label">Current:</span>
-                                                <span className="value">${parseFloat(asset.current_value).toFixed(2)}</span>
+                                                <span className="label">Amount Available:</span>
+                                                <span className="value">{parseInt(asset.current_value)} items</span>
                                             </div>
                                         )}
                                     </div>
@@ -566,7 +670,15 @@ const FixedAssetsManager = ({ user }) => {
                                     onClick={() => handleAddMaintenance(asset)}
                                     title="Add maintenance log"
                                 >
-                                    <i className='bx bx-wrench'></i>
+                                    <i className='bx bx-plus'></i>
+                                </button>
+                                <button 
+                                    className="btn-icon"
+                                    style={{backgroundColor: '#17a2b8'}}
+                                    onClick={() => toggleMaintenanceLog(asset.id)}
+                                    title="View maintenance logs"
+                                >
+                                    <i className='bx bx-list-ul'></i>
                                 </button>
                                 <button 
                                     className="btn-icon btn-delete"
@@ -576,6 +688,49 @@ const FixedAssetsManager = ({ user }) => {
                                     <i className='bx bx-trash'></i>
                                 </button>
                             </div>
+                            
+                            {/* Maintenance Log Display */}
+                            {expandedAssetId === asset.id && (
+                                <div className="maintenance-log-display">
+                                    <h5>Maintenance History</h5>
+                                    {!maintenanceLogs[asset.id] || maintenanceLogs[asset.id].length === 0 ? (
+                                        <p className="no-data">No maintenance records found.</p>
+                                    ) : (
+                                        <div className="maintenance-logs-list">
+                                            {maintenanceLogs[asset.id].map((log) => (
+                                                <div key={log.id} className="maintenance-log-item">
+                                                    <div className="log-header">
+                                                        <span className={`badge ${getMaintenanceTypeBadgeClass(log.maintenance_type)}`}>
+                                                            {log.maintenance_type.toUpperCase()}
+                                                        </span>
+                                                        <span className="log-date">{new Date(log.maintenance_date).toLocaleDateString()}</span>
+                                                    </div>
+                                                    <p className="log-description">{log.description}</p>
+                                                    {(log.performed_by || log.cost) && (
+                                                        <div className="log-details">
+                                                            {log.performed_by && (
+                                                                <span className="log-performer">
+                                                                    <i className='bx bx-user'></i> {log.performed_by}
+                                                                </span>
+                                                            )}
+                                                            {log.cost && (
+                                                                <span className="log-cost">
+                                                                    <i className='bx bx-money'></i> {parseFloat(log.cost).toFixed(2)} Birr
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    {log.next_scheduled_date && (
+                                                        <div className="log-next-scheduled">
+                                                            <strong>Next Scheduled:</strong> {new Date(log.next_scheduled_date).toLocaleDateString()}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -630,10 +785,7 @@ const MaintenanceLogForm = ({ asset, onCancel, onSuccess }) => {
     };
 
     return (
-        <div className="resource-form-panel maintenance-form">
-            <h4>
-                <i className='bx bx-wrench'></i> Add Maintenance Log - {asset.asset_name}
-            </h4>
+        <div className="maintenance-form-content">
             <form onSubmit={handleSubmit} className="resource-form">
                 <div className="form-row">
                     <div className="form-group">
@@ -688,7 +840,7 @@ const MaintenanceLogForm = ({ asset, onCancel, onSuccess }) => {
                     </div>
                     
                     <div className="form-group">
-                        <label htmlFor="cost">Cost ($)</label>
+                        <label htmlFor="cost">Cost (Birr)</label>
                         <input
                             type="number"
                             id="cost"

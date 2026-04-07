@@ -75,6 +75,70 @@ const ChildList = ({ user, basePath = '/admin', selectedProgram = null }) => {
     return age;
   };
 
+  // Helper function to get detailed age for children under 1 year
+  const getDetailedAge = (dateOfBirth) => {
+    if (!dateOfBirth) return null;
+    const birthDate = new Date(dateOfBirth);
+    const now = new Date();
+    
+    // Calculate total time difference in milliseconds
+    const diffTime = now - birthDate;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    // If less than 1 year old
+    if (diffDays < 365) {
+      // Calculate months
+      let months = (now.getFullYear() - birthDate.getFullYear()) * 12;
+      months += now.getMonth() - birthDate.getMonth();
+      
+      // Adjust if day of month hasn't been reached yet
+      if (now.getDate() < birthDate.getDate()) {
+        months--;
+      }
+      
+      // Calculate remaining days
+      let days = 0;
+      const prevMonthDate = new Date(now.getFullYear(), now.getMonth(), 0);
+      const adjustedBirthDay = birthDate.getDate() > prevMonthDate.getDate() ? prevMonthDate.getDate() : birthDate.getDate();
+      
+      if (now.getDate() >= adjustedBirthDay) {
+        days = now.getDate() - adjustedBirthDay;
+      } else {
+        const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, adjustedBirthDay);
+        days = now.getDate() + (adjustedBirthDay - prevMonth.getDate());
+      }
+      
+      return { months, days };
+    }
+    
+    return null;
+  };
+
+  // Helper function to display age appropriately
+  const displayAge = (dateOfBirth, dateOfBirthType) => {
+    if (!dateOfBirth) {
+      return '-';
+    }
+    
+    const detailedAge = getDetailedAge(dateOfBirth);
+    
+    // If under 1 year old, show months and days
+    if (detailedAge) {
+      let ageText = `${detailedAge.months} month${detailedAge.months !== 1 ? 's' : ''}`;
+      if (detailedAge.days > 0) {
+        ageText += `, ${detailedAge.days} day${detailedAge.days !== 1 ? 's' : ''}`;
+      }
+      // Add ~ prefix if estimated
+      return dateOfBirthType === 'estimated' ? `~${ageText}` : ageText;
+    }
+    
+    // Otherwise show years
+    const ageInYears = calculateAge(dateOfBirth);
+    const ageText = ageInYears !== null ? `${ageInYears} year${ageInYears !== 1 ? 's' : ''} old` : '-';
+    // Add ~ prefix if estimated
+    return dateOfBirthType === 'estimated' ? `~${ageText}` : ageText;
+  };
+
   // Sort children
   const sortedChildren = [...filteredChildren].sort((a, b) => {
     if (!sortConfig.key) return 0;
@@ -203,7 +267,7 @@ const ChildList = ({ user, basePath = '/admin', selectedProgram = null }) => {
     const formattedData = children.map(child => ({
       name: `${child.first_name} ${child.last_name}`,
       gender: child.gender,
-      age: calculateAge(child.date_of_birth) || (child.estimated_age ? `~${child.estimated_age} (estimated)` : '-'),
+      age: displayAge(child.date_of_birth, child.date_of_birth_type),
       date_of_admission: new Date(child.date_of_admission).toLocaleDateString(),
       current_status: child.current_status
     }));
@@ -224,7 +288,7 @@ const ChildList = ({ user, basePath = '/admin', selectedProgram = null }) => {
     const formattedData = children.map(child => ({
       name: `${child.first_name} ${child.last_name}`,
       gender: child.gender,
-      age: calculateAge(child.date_of_birth) || (child.estimated_age ? `~${child.estimated_age} (estimated)` : '-'),
+      age: displayAge(child.date_of_birth, child.date_of_birth_type),
       date_of_admission: new Date(child.date_of_admission).toLocaleDateString(),
       current_status: child.current_status
     }));
@@ -245,7 +309,7 @@ const ChildList = ({ user, basePath = '/admin', selectedProgram = null }) => {
     const formattedData = children.map(child => ({
       name: `${child.first_name} ${child.last_name}`,
       gender: child.gender,
-      age: calculateAge(child.date_of_birth) || (child.estimated_age ? `~${child.estimated_age} (estimated)` : '-'),
+      age: displayAge(child.date_of_birth, child.date_of_birth_type),
       date_of_admission: new Date(child.date_of_admission).toLocaleDateString(),
       current_status: child.current_status
     }));
@@ -264,7 +328,7 @@ const ChildList = ({ user, basePath = '/admin', selectedProgram = null }) => {
     const formattedData = [
       { field: 'Full Name', value: `${child.first_name} ${child.last_name}` },
       { field: 'Gender', value: child.gender },
-      { field: 'Age', value: calculateAge(child.date_of_birth) || (child.estimated_age ? `~${child.estimated_age} years (estimated)` : '-') },
+      { field: 'Age', value: displayAge(child.date_of_birth, child.date_of_birth_type) },
       { field: 'Date of Admission', value: new Date(child.date_of_admission).toLocaleDateString() },
       { field: 'Current Status', value: child.current_status },
       { field: 'Place of Origin', value: child.place_of_origin || '-' },
@@ -286,7 +350,7 @@ const ChildList = ({ user, basePath = '/admin', selectedProgram = null }) => {
     const formattedData = [
       { field: 'Full Name', value: `${child.first_name} ${child.last_name}` },
       { field: 'Gender', value: child.gender },
-      { field: 'Age', value: calculateAge(child.date_of_birth) || (child.estimated_age ? `~${child.estimated_age} years (estimated)` : '-') },
+      { field: 'Age', value: displayAge(child.date_of_birth, child.date_of_birth_type) },
       { field: 'Date of Admission', value: new Date(child.date_of_admission).toLocaleDateString() },
       { field: 'Current Status', value: child.current_status },
       { field: 'Place of Origin', value: child.place_of_origin || '-' },
@@ -506,8 +570,8 @@ const ChildList = ({ user, basePath = '/admin', selectedProgram = null }) => {
                     </div>
                   </td>
                   <td>{child.gender}</td>
-                  <td style={{ fontWeight: calculateAge(child.date_of_birth) ? '600' : 'normal', color: calculateAge(child.date_of_birth) ? 'var(--primary)' : 'inherit' }}>
-                    {calculateAge(child.date_of_birth) || (child.estimated_age ? `~${child.estimated_age}` : '-')}
+                  <td style={{ fontWeight: calculateAge(child.date_of_birth) ? '600' : 'normal', color: calculateAge(child.date_of_birth) || getDetailedAge(child.date_of_birth) ? 'var(--primary)' : 'inherit' }}>
+                    {displayAge(child.date_of_birth, child.date_of_birth_type)}
                   </td>
                   <td>{new Date(child.date_of_admission).toLocaleDateString()}</td>
                   <td>

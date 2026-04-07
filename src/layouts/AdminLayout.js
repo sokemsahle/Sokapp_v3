@@ -248,7 +248,8 @@ function AdminLayout({ handleLogout, currentUser }) {
         submenu: [
           { text: 'View Inventory', route: '/admin/inventory' },
           { text: 'Add New Item', route: '/admin/inventory/add' },
-          { text: 'Request Approvals', route: '/admin/inventory/approvals' }
+          { text: 'Request Approvals', route: '/admin/inventory/approvals' },
+          { text: 'Returnable Items', route: '/admin/inventory/returnable' }
         ]
       });
       items.push({ icon: 'bx bx-user', text: 'Child Profiles', route: '/admin/children' });

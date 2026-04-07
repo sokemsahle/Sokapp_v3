@@ -139,16 +139,14 @@ export const downloadChildProfilePDF = async (id) => {
     // Create a printable version
     const printWindow = window.open('', '_blank');
     
-    // Generate HTML content for printing
-    const htmlContent = generateProfileHTML(profileData);
+    // Generate HTML content for printing with better controls
+    const htmlContent = generateProfileHTML(profileData, true); // Pass true to include controls
     
     printWindow.document.write(htmlContent);
     printWindow.document.close();
     
-    // Wait for content to load then print
-    setTimeout(() => {
-      printWindow.print();
-    }, 250);
+    // Don't auto-print - let user choose
+    // User can click the Print button when ready
     
     return profileData;
   } catch (error) {
@@ -158,7 +156,7 @@ export const downloadChildProfilePDF = async (id) => {
 };
 
 // Helper function to generate printable HTML
-const generateProfileHTML = (data) => {
+const generateProfileHTML = (data, includeControls = false) => {
   const child = data.basicInfo;
   
   return `
@@ -167,7 +165,8 @@ const generateProfileHTML = (data) => {
     <head>
       <title>Child Profile - ${child.first_name} ${child.last_name}</title>
       <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .print-container { background: white; padding: 40px; max-width: 900px; margin: 0 auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
         .section { margin-bottom: 25px; }
         .section-title { background: #667eea; color: white; padding: 8px 12px; margin-bottom: 10px; }
@@ -177,22 +176,66 @@ const generateProfileHTML = (data) => {
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background: #f4f4f4; }
+        .controls { 
+          position: fixed; 
+          top: 20px; 
+          right: 20px; 
+          background: white; 
+          padding: 15px; 
+          border-radius: 8px; 
+          box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+          z-index: 1000;
+        }
+        .controls button { 
+          padding: 10px 20px; 
+          margin: 5px; 
+          border: none; 
+          border-radius: 5px; 
+          cursor: pointer; 
+          font-size: 14px;
+          font-weight: 600;
+        }
+        .btn-print { background: #667eea; color: white; }
+        .btn-print:hover { background: #5568d3; }
+        .btn-save { background: #28a745; color: white; }
+        .btn-save:hover { background: #218838; }
+        .btn-close { background: #dc3545; color: white; }
+        .btn-close:hover { background: #c82333; }
         @media print {
-          .no-print { display: none; }
+          .controls { display: none !important; }
+          body { background: white; padding: 0; }
+          .print-container { box-shadow: none; max-width: 100%; }
         }
       </style>
     </head>
     <body>
-      <div class="header">
-        <h1>Child Profile Report</h1>
-        <h2>${child.first_name} ${child.last_name}</h2>
-        <p>Generated on: ${new Date().toLocaleDateString()}</p>
+      ${includeControls ? `
+      <div class="controls">
+        <div style="font-size: 12px; color: #666; margin-bottom: 10px;">Choose an option:</div>
+        <button class="btn-print" onclick="window.print()" title="Open Print Dialog">
+          🖨️ Print
+        </button>
+        <button class="btn-save" onclick="saveAsPDF()" title="Save as PDF">
+          💾 Save as PDF
+        </button>
+        <button class="btn-close" onclick="window.close()" title="Close Window">
+          ✖ Close
+        </button>
       </div>
+      ` : ''}
+      
+      <div class="print-container">
+        <div class="header">
+          <h1>Child Profile Report</h1>
+          <h2>${child.first_name} ${child.last_name}</h2>
+          <p>Generated on: ${new Date().toLocaleDateString()}</p>
+        </div>
       
       <div class="section">
         <div class="section-title">Basic Information</div>
         <div class="info-grid">
           <div class="info-item"><label>Full Name:</label> ${child.first_name} ${child.middle_name || ''} ${child.last_name}</div>
+          ${child.nickname ? `<div class="info-item"><label>Nickname:</label> ${child.nickname}</div>` : ''}
           <div class="info-item"><label>Gender:</label> ${child.gender}</div>
           <div class="info-item"><label>Date of Birth:</label> ${child.date_of_birth ? new Date(child.date_of_birth).toLocaleDateString() : 'Unknown'}</div>
           <div class="info-item"><label>Estimated Age:</label> ${child.estimated_age || 'Unknown'}</div>
@@ -313,6 +356,16 @@ const generateProfileHTML = (data) => {
         <button onclick="window.close()" style="padding: 10px 20px; background: #dc3545; color: white; border: none; cursor: pointer;">Close</button>
       </div>
     </body>
+    <script>
+      // Function to save as PDF using browser's print-to-PDF functionality
+      function saveAsPDF() {
+        // Show instructions
+        alert('To save as PDF:\n\n1. In the print dialog that will appear, look for "Destination" or "Printer"\n2. Select "Save as PDF" or "Microsoft Print to PDF"\n3. Click "Save" and choose where to save the file\n\nThe print dialog will now open.');
+        
+        // Trigger print dialog where user can select "Save as PDF"
+        window.print();
+      }
+    </script>
     </html>
   `;
 };
