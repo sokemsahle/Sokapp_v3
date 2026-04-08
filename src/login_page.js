@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './index.css';
+import API_CONFIG from './config/api';
 
 const LoginPage = ({ handleLogin }) => {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -20,7 +21,7 @@ const LoginPage = ({ handleLogin }) => {
 
   const fetchNewsNotices = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/news-notices');
+      const response = await fetch(API_CONFIG.getUrl('/api/news-notices'));
       const result = await response.json();
       if (result.success) {
         setNews(result.news || '');
@@ -54,7 +55,7 @@ const LoginPage = ({ handleLogin }) => {
     setForgotPasswordMessage('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/forgot-password', {
+      const response = await fetch(API_CONFIG.getUrl('/api/forgot-password'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

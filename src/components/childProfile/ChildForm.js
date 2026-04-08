@@ -4,6 +4,7 @@ import { createChild, updateChild, getChild } from '../../services/childService'
 import { getPrograms } from '../../services/programService';
 import resourceService from '../../services/resourceService';
 import axios from 'axios';
+import API_CONFIG from '../../config/api';
 import './ChildProfile.css';
 
 const ChildForm = ({ user, mode, childId, onBack }) => {
@@ -282,7 +283,7 @@ const ChildForm = ({ user, mode, childId, onBack }) => {
         const photoFormData = new FormData();
         photoFormData.append('profilePhoto', photoFile);
         
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        const apiUrl = API_CONFIG.BASE_URL;
         await axios.post(`${apiUrl}/api/children/${childId}/upload-photo`, photoFormData, {
           headers: {
             'Content-Type': 'multipart/form-data'

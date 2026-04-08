@@ -20,6 +20,7 @@ import ManageOfficeIPs from '../components/admin/ManageOfficeIPs';
 import NotificationSettings from '../components/NotificationSettings';
 import Appointments from '../components/Appointments';
 import SystemCalendar from '../components/SystemCalendar';
+import API_CONFIG from '../config/api';
 
 // Child Profile Components
 import ChildList from '../components/childProfile/ChildList';
@@ -104,7 +105,7 @@ function AdminLayout({ handleLogout, currentUser }) {
       
       try {
         // Try to fetch employee by email - handle 404 gracefully
-        const response = await fetch(`http://localhost:5000/api/employees/by-email/${encodeURIComponent(currentUser.email)}`);
+        const response = await fetch(API_CONFIG.getUrl(`/api/employees/by-email/${encodeURIComponent(currentUser.email)}`));
         
         if (response.status === 404) {
           // Employee not found - this is OK, user might not have an employee profile
@@ -157,7 +158,7 @@ function AdminLayout({ handleLogout, currentUser }) {
         console.log('[AdminLayout] Fetching with user_id:', currentUser.id, 'email:', currentUser.email);
         
         // Fetch unsigned requisitions count (unseen only)
-        const unsignedUrl = `http://localhost:5000/api/requisitions/unsigned?unseen=true&user_id=${currentUser.id}`;
+        const unsignedUrl = API_CONFIG.getUrl(`/api/requisitions/unsigned?unseen=true&user_id=${currentUser.id}`);
         console.log('[AdminLayout] Calling:', unsignedUrl);
         const unsignedResponse = await fetch(unsignedUrl);
         const unsignedResult = await unsignedResponse.json();
@@ -172,7 +173,7 @@ function AdminLayout({ handleLogout, currentUser }) {
         }
         
         // Fetch finalized requisitions count (unseen only)
-        const finalizedUrl = `http://localhost:5000/api/requisitions/finalized?email=${encodeURIComponent(currentUser.email)}&unseen=true&user_id=${currentUser.id}`;
+        const finalizedUrl = API_CONFIG.getUrl(`/api/requisitions/finalized?email=${encodeURIComponent(currentUser.email)}&unseen=true&user_id=${currentUser.id}`);
         console.log('[AdminLayout] Calling:', finalizedUrl);
         const finalizedResponse = await fetch(finalizedUrl);
         const finalizedResult = await finalizedResponse.json();

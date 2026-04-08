@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_CONFIG from '../../config/api';
 import { getCaseHistory, addCaseHistory } from '../../services/childService';
 import axios from 'axios';
 import './ChildProfile.css';
@@ -76,7 +77,7 @@ const CaseHistoryTab = ({ childId, user }) => {
 
   const exportCaseHistoryPDF = async () => {
     try {
-      const childResponse = await axios.get(`http://localhost:5000/api/children/${childId}`);
+      const childResponse = await axios.get(`${API_CONFIG.BASE_URL}/api/children/${childId}`);
       const child = childResponse.data.data;
       
       const columns = [
@@ -116,7 +117,7 @@ const CaseHistoryTab = ({ childId, user }) => {
 
   const exportSingleCasePDF = async (caseItem) => {
     try {
-      const childResponse = await axios.get(`http://localhost:5000/api/children/${childId}`);
+      const childResponse = await axios.get(`${API_CONFIG.BASE_URL}/api/children/${childId}`);
       const child = childResponse.data.data;
       
       const columns = [

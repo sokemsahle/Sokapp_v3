@@ -475,7 +475,7 @@ const EmployeeManagement = ({ isOpen, selectedProgram }) => {
       // Helper to convert undefined to null
       const toNull = (val) => val === undefined ? null : val;
       
-      const response = await fetch(`http://localhost:5000/api/employees/${employee.id}`, {
+      const response = await fetch(API_CONFIG.getUrl(`/api/employees/${employee.id}`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Requisition from './Requisition';
+import API_CONFIG from '../../config/api';
 
 const ViewRequisitionPage = ({ currentUser }) => {
   const { id } = useParams();
@@ -24,7 +25,7 @@ const ViewRequisitionPage = ({ currentUser }) => {
     try {
       console.log('Checking access for user:', currentUser.email);
       // Check if user has any requisition role or is admin
-      const response = await fetch(`http://localhost:5000/api/user/requisition-roles?email=${encodeURIComponent(currentUser.email)}`);
+      const response = await fetch(API_CONFIG.getUrl(`/api/user/requisition-roles?email=${encodeURIComponent(currentUser.email)}`));
       const result = await response.json();
       
       console.log('API Response:', result);

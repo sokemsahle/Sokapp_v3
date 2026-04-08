@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_CONFIG from '../../config/api';
 import './AttendanceWidget.css';
 
 const AttendanceWidget = ({ user, employeeData }) => {
@@ -35,7 +36,7 @@ const AttendanceWidget = ({ user, employeeData }) => {
                 return;
             }
             
-            const response = await fetch(`http://localhost:5000/api/attendance/today/status?userId=${user.id}`, {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/api/attendance/today/status?userId=${user.id}`, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -74,7 +75,7 @@ const AttendanceWidget = ({ user, employeeData }) => {
                     throw new Error('No active clock-in session found');
                 }
 
-                const response = await fetch(`http://localhost:5000/api/attendance/clock-out/${currentLog.id}`, {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/api/attendance/clock-out/${currentLog.id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -98,7 +99,7 @@ const AttendanceWidget = ({ user, employeeData }) => {
                 }
             } else {
                 // Clock in
-                const response = await fetch('http://localhost:5000/api/attendance/clock-in', {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/api/attendance/clock-in`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

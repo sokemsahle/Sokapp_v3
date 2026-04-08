@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getLegalDocuments, addLegalDocument } from '../../services/childService';
 import axios from 'axios';
+import API_CONFIG from '../../config/api';
 import './ChildProfile.css';
 import * as XLSX from 'xlsx';
 import ExportUtils from '../../utils/ExportUtils';
@@ -67,7 +68,7 @@ const LegalTab = ({ childId, user }) => {
         const fileFormData = new FormData();
         fileFormData.append('documentFile', documentFile);
         
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        const apiUrl = API_CONFIG.BASE_URL;
         const uploadResponse = await axios.post(
           `${apiUrl}/api/children/${childId}/legal-documents/upload`,
           fileFormData,
@@ -133,7 +134,7 @@ const LegalTab = ({ childId, user }) => {
 
   const exportLegalDocumentsPDF = async () => {
     try {
-      const childResponse = await axios.get(`http://localhost:5000/api/children/${childId}`);
+      const childResponse = await axios.get(`${API_CONFIG.BASE_URL}/api/children/${childId}`);
       const child = childResponse.data.data;
       
       const columns = [
@@ -174,7 +175,7 @@ const LegalTab = ({ childId, user }) => {
 
   const exportSingleDocumentPDF = async (document) => {
     try {
-      const childResponse = await axios.get(`http://localhost:5000/api/children/${childId}`);
+      const childResponse = await axios.get(`${API_CONFIG.BASE_URL}/api/children/${childId}`);
       const child = childResponse.data.data;
       
       const columns = [
@@ -400,7 +401,7 @@ const LegalTab = ({ childId, user }) => {
                     <h5>File Attachment</h5>
                     <div className="detail-row full-width">
                       <label>Document File:</label>
-                      <a href={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${selectedDocument.document_file}`} target="_blank" rel="noopener noreferrer">
+                      <a href={`${API_CONFIG.BASE_URL}${selectedDocument.document_file}`} target="_blank" rel="noopener noreferrer">
                         <i className='bx bx-link-external'></i> View Document
                       </a>
                     </div>

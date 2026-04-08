@@ -139,7 +139,7 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData = null }) => {
   const fetchEmployeeDocuments = async (employeeId) => {
     try {
       console.log('[Fetch] Fetching documents for employee:', employeeId);
-      const response = await fetch(`http://localhost:5000/api/employees/${employeeId}/documents`);
+      const response = await fetch(API_CONFIG.getUrl(`/api/employees/${employeeId}/documents`));
       const result = await response.json();
       
       if (result.success) {
@@ -278,7 +278,7 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData = null }) => {
     if (docToRemove.id) {
       if (window.confirm('Are you sure you want to delete this document?')) {
         try {
-          const response = await fetch(`http://localhost:5000/api/employees/${employeeId}/documents/${docToRemove.id}`, {
+          const response = await fetch(API_CONFIG.getUrl(`/api/employees/${employeeId}/documents/${docToRemove.id}`), {
             method: 'DELETE'
           });
           

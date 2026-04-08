@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_CONFIG from '../../config/api';
 import './Report.css';
 
 // Professional SVG Icons
@@ -80,7 +81,7 @@ const UserActivityReport = ({ selectedProgram }) => {
         try {
             // Add sorting parameters for detail endpoint
             const params = reportType === 'detail' ? `?sortBy=${sortConfig.sortBy}&sortOrder=${sortConfig.sortOrder}` : '';
-            const response = await fetch(`http://localhost:5000/api/user-activity/${reportType}${params}`);
+            const response = await fetch(`${API_CONFIG.BASE_URL}/api/user-activity/${reportType}${params}`);
             const result = await response.json();
             
             if (result.success) {

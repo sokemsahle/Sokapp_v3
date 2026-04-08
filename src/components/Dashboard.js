@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_CONFIG from '../config/api';
 
 const Dashboard = ({ selectedProgram }) => {
   const [staffList, setStaffList] = useState([]);
@@ -22,7 +23,7 @@ const Dashboard = ({ selectedProgram }) => {
       setStatsLoading(true);
       
       // Fetch children data
-      let childrenUrl = 'http://localhost:5000/api/children';
+      let childrenUrl = `${API_CONFIG.BASE_URL}/api/children`;
       if (selectedProgram) {
         childrenUrl += `?program_id=${selectedProgram}`;
       }
@@ -56,7 +57,7 @@ const Dashboard = ({ selectedProgram }) => {
       }
       
       // Fetch beds data
-      const bedsResponse = await fetch('http://localhost:5000/api/beds');
+      const bedsResponse = await fetch(`${API_CONFIG.BASE_URL}/api/beds`);
       const bedsResult = await bedsResponse.json();
       
       if (bedsResult.success && bedsResult.data) {
@@ -75,7 +76,7 @@ const Dashboard = ({ selectedProgram }) => {
   const fetchEmployees = async () => {
     try {
       setLoading(true);
-      let url = 'http://localhost:5000/api/employees';
+      let url = `${API_CONFIG.BASE_URL}/api/employees`;
       if (selectedProgram) {
         url += `?program_id=${selectedProgram}`;
       }

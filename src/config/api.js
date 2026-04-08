@@ -1,14 +1,31 @@
 // Frontend API Configuration
 // This file reads from environment variables and provides API endpoints
 
-const API_CONFIG = {
-  // Base URL for all API calls - ALWAYS use localhost:5000 for backend API
-  BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:5000',
+// Get API base URL from environment variable with fallback
+const getApiBaseUrl = () => {
+  // For Create React App, environment variables must be prefixed with REACT_APP_
+  const envUrl = process.env.REACT_APP_API_URL;
   
-  // Debug: Log the actual BASE_URL being used
+  // In production, environment variable MUST be set - no fallback to localhost
+  if (process.env.NODE_ENV === 'production' && !envUrl) {
+    console.error('[API_CONFIG] ERROR: REACT_APP_API_URL environment variable is not set in production!');
+    throw new Error('REACT_APP_API_URL environment variable must be set in production environment');
+  }
+  
+  // Return environment variable if set, otherwise default to localhost:5000 (dev only)
+  return envUrl || 'http://localhost:5000';
+};
+
+const API_CONFIG = {
+  // Base URL for all API calls - uses environment variable
+  BASE_URL: getApiBaseUrl(),
+  
+  // Debug: Log the actual BASE_URL being used (only in development)
   DEBUG_URL: (() => {
-    const url = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-    console.log('[API_CONFIG] BASE_URL:', url, '| NODE_ENV:', process.env.NODE_ENV);
+    const url = getApiBaseUrl();
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[API_CONFIG] BASE_URL:', url, '| NODE_ENV:', process.env.NODE_ENV);
+    }
     return url;
   })(),
   

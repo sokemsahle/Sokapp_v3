@@ -16,6 +16,7 @@ import EmployeeManagement from '../components/EmployeeForm/EmployeeManagement';
 import NotificationSettings from '../components/NotificationSettings';
 import Appointments from '../components/Appointments';
 import SystemCalendar from '../components/SystemCalendar';
+import API_CONFIG from '../config/api';
 
 // Child Profile Components
 import ChildList from '../components/childProfile/ChildList';
@@ -36,7 +37,7 @@ const FormAccessWrapper = ({ formName, children }) => {
 
   const checkFormAccess = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/forms');
+      const response = await fetch(API_CONFIG.getUrl('/api/forms'));
       const result = await response.json();
       
       if (result.success && result.forms) {
@@ -125,7 +126,7 @@ function StandardUserLayout({ handleLogout, user }) {
       console.log('Fetching employee data for email:', user.email);
       
       try {
-        const response = await fetch(`http://localhost:5000/api/employees/by-email/${encodeURIComponent(user.email)}`);
+        const response = await fetch(API_CONFIG.getUrl(`/api/employees/by-email/${encodeURIComponent(user.email)}`));
         console.log('Response status:', response.status);
         
         if (response.ok) {
@@ -189,15 +190,15 @@ function StandardUserLayout({ handleLogout, user }) {
     
     try {
       // Fetch unsigned requisitions (pending action for reviewer/approver/authorizer roles)
-      const unsignedResponse = await fetch(`http://localhost:5000/api/requisitions/unsigned?unseen=true&user_id=${user.id}`);
+      const unsignedResponse = await fetch(API_CONFIG.getUrl(`/api/requisitions/unsigned?unseen=true&user_id=${user.id}`));
       const unsignedResult = await unsignedResponse.json();
       
       // Fetch finalized requisitions (for requester notification)
-      const finalizedResponse = await fetch(`http://localhost:5000/api/requisitions/finalized?email=${encodeURIComponent(user.email)}&unseen=true&user_id=${user.id}`);
+      const finalizedResponse = await fetch(API_CONFIG.getUrl(`/api/requisitions/finalized?email=${encodeURIComponent(user.email)}&unseen=true&user_id=${user.id}`));
       const finalizedResult = await finalizedResponse.json();
       
       // Fetch rejected requisitions (for requester notification)
-      const rejectedResponse = await fetch(`http://localhost:5000/api/requisitions/rejected?email=${encodeURIComponent(user.email)}&unseen=true&user_id=${user.id}`);
+      const rejectedResponse = await fetch(API_CONFIG.getUrl(`/api/requisitions/rejected?email=${encodeURIComponent(user.email)}&unseen=true&user_id=${user.id}`));
       const rejectedResult = await rejectedResponse.json();
       
       let totalCount = 0;

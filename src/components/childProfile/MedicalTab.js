@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getMedicalRecords, addMedicalRecord } from '../../services/childService';
 import axios from 'axios';
+import API_CONFIG from '../../config/api';
 import './ChildProfile.css';
 import * as XLSX from 'xlsx';
 import ExportUtils from '../../utils/ExportUtils';
@@ -93,7 +94,7 @@ const MedicalTab = ({ childId, user }) => {
         const fileFormData = new FormData();
         fileFormData.append('medicalReport', medicalFile);
         
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        const apiUrl = API_CONFIG.BASE_URL;
         const uploadResponse = await axios.post(
           `${apiUrl}/api/children/${childId}/medical-records/upload`,
           fileFormData,
@@ -221,7 +222,7 @@ const MedicalTab = ({ childId, user }) => {
   const exportMedicalRecordsPDF = async () => {
     try {
       // Get child details
-      const childResponse = await axios.get(`http://localhost:5000/api/children/${childId}`);
+      const childResponse = await axios.get(`${API_CONFIG.BASE_URL}/api/children/${childId}`);
       const child = childResponse.data.data;
       
       const columns = [
@@ -287,7 +288,7 @@ const MedicalTab = ({ childId, user }) => {
   const exportSingleRecordPDF = async (record) => {
     try {
       // Get child details
-      const childResponse = await axios.get(`http://localhost:5000/api/children/${childId}`);
+      const childResponse = await axios.get(`${API_CONFIG.BASE_URL}/api/children/${childId}`);
       const child = childResponse.data.data;
       
       const columns = [
@@ -903,7 +904,7 @@ const MedicalTab = ({ childId, user }) => {
                   {selectedRecord.medical_report_file && (
                     <div className="detail-row full-width">
                       <label>Medical Report:</label>
-                      <a href={`http://localhost:5000${selectedRecord.medical_report_file}`} target="_blank" rel="noopener noreferrer">
+                      <a href={`${API_CONFIG.BASE_URL}${selectedRecord.medical_report_file}`} target="_blank" rel="noopener noreferrer">
                         <i className='bx bx-link'></i> View Document
                       </a>
                     </div>

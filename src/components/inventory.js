@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import './inventory.css';
 import { getPrograms } from '../services/programService';
+import API_CONFIG from '../config/api';
 
 const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission = false, viewMode = 'view' }) => {
   const navigate = useNavigate();
@@ -75,7 +76,7 @@ const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission =
 
   const fetchInventoryCategories = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/lookup');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/lookup`);
       const result = await response.json();
       if (result.success && result.inventoryCategories) {
         setInventoryCategories(result.inventoryCategories);
@@ -106,7 +107,7 @@ const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission =
 
   const fetchInventory = async () => {
     try {
-      let url = 'http://localhost:5000/api/inventory';
+      let url = `${API_CONFIG.BASE_URL}/api/inventory`;
       if (selectedProgram) {
         url += `?program_id=${selectedProgram}`;
       }
@@ -131,7 +132,7 @@ const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission =
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/inventory/stats/summary');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inventory/stats/summary`);
       const result = await response.json();
       if (result.success) {
         setStats(result.data);
@@ -143,7 +144,7 @@ const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission =
 
   const fetchAllTransactions = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/inventory/transactions/all');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inventory/transactions/all`);
       const result = await response.json();
       if (result.success) {
         setTransactions(result.data);
@@ -178,7 +179,7 @@ const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission =
 
       console.log('Submitting request with data:', requestData);
       
-      const response = await fetch('http://localhost:5000/api/inventory/request', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inventory/request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData)
@@ -217,7 +218,7 @@ const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission =
         expiry_date: formData.expiry_date || null
       };
       
-      const response = await fetch('http://localhost:5000/api/inventory', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inventory`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(itemData)
@@ -253,7 +254,7 @@ const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission =
       console.log('has_expiry_date value:', itemData.has_expiry_date);
       console.log('is_returnable value:', itemData.is_returnable);
       
-      const response = await fetch(`http://localhost:5000/api/inventory/${editingItem.id}`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inventory/${editingItem.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(itemData)
@@ -278,7 +279,7 @@ const Inventory = ({ Inventoryopen, selectedProgram, user, hasManagePermission =
   const handleDeleteItem = async (id) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
       try {
-        const response = await fetch(`http://localhost:5000/api/inventory/${id}`, {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/api/inventory/${id}`, {
           method: 'DELETE'
         });
         const result = await response.json();

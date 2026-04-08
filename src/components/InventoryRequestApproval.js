@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_CONFIG from '../config/api';
 import { 
   CheckCircle, 
   XCircle, 
@@ -44,7 +45,7 @@ const InventoryRequestApproval = ({ user, hasManagePermission = false }) => {
 
   const fetchPendingRequests = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/inventory/requests/pending');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inventory/requests/pending`);
       const result = await response.json();
       
       if (result.success) {
@@ -61,7 +62,7 @@ const InventoryRequestApproval = ({ user, hasManagePermission = false }) => {
 
   const fetchAllRequests = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/inventory/requests');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inventory/requests`);
       const result = await response.json();
       
       if (result.success) {
@@ -93,7 +94,7 @@ const InventoryRequestApproval = ({ user, hasManagePermission = false }) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/inventory/request/${selectedRequest.id}/approve`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inventory/request/${selectedRequest.id}/approve`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -128,7 +129,7 @@ const InventoryRequestApproval = ({ user, hasManagePermission = false }) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/inventory/request/${selectedRequest.id}/reject`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inventory/request/${selectedRequest.id}/reject`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

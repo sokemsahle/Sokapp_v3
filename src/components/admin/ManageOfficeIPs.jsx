@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_CONFIG from '../../config/api';
 import '../Settings.css';
 
 const ManageOfficeIPs = ({ user }) => {
@@ -34,7 +35,7 @@ const ManageOfficeIPs = ({ user }) => {
             const userIdString = user.id.toString();
             console.log('[ManageOfficeIPs] Sending X-User-ID header:', userIdString);
             
-            const response = await fetch('http://localhost:5000/api/admin/organization/ips', {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/api/admin/organization/ips`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-User-ID': userIdString
@@ -84,7 +85,7 @@ const ManageOfficeIPs = ({ user }) => {
 
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/api/admin/organization/ips', {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/api/admin/organization/ips`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -125,7 +126,7 @@ const ManageOfficeIPs = ({ user }) => {
         setLoading(true);
 
         try {
-            const response = await fetch(`http://localhost:5000/api/admin/organization/ips/${id}`, {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/api/admin/organization/ips/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -159,7 +160,7 @@ const ManageOfficeIPs = ({ user }) => {
         setLoading(true);
 
         try {
-            const response = await fetch(`http://localhost:5000/api/admin/organization/ips/${id}`, {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/api/admin/organization/ips/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

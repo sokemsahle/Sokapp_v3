@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Requisition.css';
+import API_CONFIG from '../../config/api';
 
 const RequisitionNotifications = ({ isOpen, onClose, onRequisitionClick, currentUser }) => {
   const [notifications, setNotifications] = useState([]);
@@ -18,11 +19,11 @@ const RequisitionNotifications = ({ isOpen, onClose, onRequisitionClick, current
       setLoading(true);
       
       // Fetch unsigned requisitions (pending action)
-      const unsignedResponse = await fetch('http://localhost:5000/api/requisitions/unsigned');
+      const unsignedResponse = await fetch(API_CONFIG.getUrl('/api/requisitions/unsigned'));
       const unsignedResult = await unsignedResponse.json();
       
       // Fetch finalized requisitions (for requester notification)
-      const finalizedResponse = await fetch(`http://localhost:5000/api/requisitions/finalized?email=${encodeURIComponent(currentUser.email)}`);
+      const finalizedResponse = await fetch(API_CONFIG.getUrl(`/api/requisitions/finalized?email=${encodeURIComponent(currentUser.email)}`));
       const finalizedResult = await finalizedResponse.json();
       
       if (unsignedResult.success) {

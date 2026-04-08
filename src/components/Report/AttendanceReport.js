@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_CONFIG from '../../config/api';
 import './Report.css';
 
 // Professional SVG Icons
@@ -76,7 +77,7 @@ const AttendanceReport = ({ selectedProgram }) => {
         setError(null);
         
         try {
-            let url = 'http://localhost:5000/api/attendance/report/users';
+            let url = `${API_CONFIG.BASE_URL}/api/attendance/report/users`;
             const params = new URLSearchParams();
             
             if (filters.startDate) params.append('startDate', filters.startDate);
@@ -124,7 +125,7 @@ const AttendanceReport = ({ selectedProgram }) => {
         setError(null);
         
         try {
-            let url = `http://localhost:5000/api/attendance/report/user/${userId}`;
+            let url = `${API_CONFIG.BASE_URL}/api/attendance/report/user/${userId}`;
             const params = new URLSearchParams();
             
             if (filters.startDate) params.append('startDate', filters.startDate);

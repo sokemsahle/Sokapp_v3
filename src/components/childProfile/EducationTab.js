@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getEducationRecords, addEducationRecord } from '../../services/childService';
 import axios from 'axios';
+import API_CONFIG from '../../config/api';
 import './ChildProfile.css';
 import * as XLSX from 'xlsx';
 import ExportUtils from '../../utils/ExportUtils';
@@ -56,7 +57,7 @@ const EducationTab = ({ childId, user }) => {
         const fileFormData = new FormData();
         fileFormData.append('certificate', certificateFile);
         
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        const apiUrl = API_CONFIG.BASE_URL;
         const uploadResponse = await axios.post(
           `${apiUrl}/api/children/${childId}/education-records/upload`,
           fileFormData,
@@ -111,7 +112,7 @@ const EducationTab = ({ childId, user }) => {
 
   const exportEducationRecordsPDF = async () => {
     try {
-      const childResponse = await axios.get(`http://localhost:5000/api/children/${childId}`);
+      const childResponse = await axios.get(`${API_CONFIG.BASE_URL}/api/children/${childId}`);
       const child = childResponse.data.data;
       
       const columns = [
@@ -151,7 +152,7 @@ const EducationTab = ({ childId, user }) => {
 
   const exportSingleRecordPDF = async (record) => {
     try {
-      const childResponse = await axios.get(`http://localhost:5000/api/children/${childId}`);
+      const childResponse = await axios.get(`${API_CONFIG.BASE_URL}/api/children/${childId}`);
       const child = childResponse.data.data;
       
       const columns = [
@@ -350,7 +351,7 @@ const EducationTab = ({ childId, user }) => {
                     {selectedRecord.certificate_file && (
                       <div className="detail-row full-width">
                         <label>Certificate File:</label>
-                        <a href={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${selectedRecord.certificate_file}`} target="_blank" rel="noopener noreferrer">
+                        <a href={`${API_CONFIG.BASE_URL}${selectedRecord.certificate_file}`} target="_blank" rel="noopener noreferrer">
                           <i className='bx bx-link-external'></i> View Certificate
                         </a>
                       </div>

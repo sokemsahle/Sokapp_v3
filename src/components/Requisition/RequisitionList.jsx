@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Requisition.css';
 import { getPrograms } from '../../services/programService';
 import ExportUtils from '../../utils/ExportUtils';
+import API_CONFIG from '../../config/api';
 
 const RequisitionList = ({ onCreateNew, onEditRequisition, userOnly = false, currentUser = null, selectedProgram }) => {
   const [requisitions, setRequisitions] = useState([]);
@@ -56,9 +57,9 @@ const RequisitionList = ({ onCreateNew, onEditRequisition, userOnly = false, cur
       setLoading(true);
       
       // Use different endpoint based on userOnly flag
-      let url = 'http://localhost:5000/api/requisitions';
+      let url = API_CONFIG.getUrl('/api/requisitions');
       if (userOnly && currentUser?.email) {
-        url = `http://localhost:5000/api/requisitions/my?email=${encodeURIComponent(currentUser.email)}`;
+        url = API_CONFIG.getUrl(`/api/requisitions/my?email=${encodeURIComponent(currentUser.email)}`);
       }
       
       // Add program filter if selected

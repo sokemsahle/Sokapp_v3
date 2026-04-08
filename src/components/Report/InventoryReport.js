@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_CONFIG from '../../config/api';
 import { Pie, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, BarElement, Tooltip, Legend, CategoryScale, LinearScale } from 'chart.js';
 import jsPDF from 'jspdf';
@@ -41,7 +42,7 @@ const InventoryReport = ({ selectedProgram }) => {
   const fetchInventoryData = async () => {
     try {
       setLoading(true);
-      let url = 'http://localhost:5000/api/inventory';
+      let url = `${API_CONFIG.BASE_URL}/api/inventory`;
       if (selectedProgram) {
         url += `?program_id=${selectedProgram}`;
       }

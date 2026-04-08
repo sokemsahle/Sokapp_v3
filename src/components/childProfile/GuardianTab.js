@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getGuardians, addGuardian } from '../../services/childService';
 import axios from 'axios';
+import API_CONFIG from '../../config/api';
 import './ChildProfile.css';
 import * as XLSX from 'xlsx';
 import ExportUtils from '../../utils/ExportUtils';
@@ -99,7 +100,7 @@ const GuardianTab = ({ childId, user }) => {
 
   const exportGuardiansPDF = async () => {
     try {
-      const childResponse = await axios.get(`http://localhost:5000/api/children/${childId}`);
+      const childResponse = await axios.get(`${API_CONFIG.BASE_URL}/api/children/${childId}`);
       const child = childResponse.data.data;
       
       const columns = [
@@ -140,7 +141,7 @@ const GuardianTab = ({ childId, user }) => {
 
   const exportSingleGuardianPDF = async (guardian) => {
     try {
-      const childResponse = await axios.get(`http://localhost:5000/api/children/${childId}`);
+      const childResponse = await axios.get(`${API_CONFIG.BASE_URL}/api/children/${childId}`);
       const child = childResponse.data.data;
       
       const columns = [

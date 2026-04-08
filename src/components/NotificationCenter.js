@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_CONFIG from '../config/api';
 
 const NotificationCenter = ({ isOpen, onClose, onRequisitionClick, currentUser, onCountChange }) => {
   const [showAll, setShowAll] = useState(false); // Toggle to show all vs unseen only
@@ -37,15 +38,15 @@ const NotificationCenter = ({ isOpen, onClose, onRequisitionClick, currentUser, 
       setLoading(true);
       
       // Fetch unsigned requisitions (pending action)
-      const unsignedResponse = await fetch(`http://localhost:5000/api/requisitions/unsigned?unseen=${!showAll}&user_id=${currentUser.id}`);
+      const unsignedResponse = await fetch(`${API_CONFIG.BASE_URL}/api/requisitions/unsigned?unseen=${!showAll}&user_id=${currentUser.id}`);
       const unsignedResult = await unsignedResponse.json();
       
       // Fetch finalized requisitions (for requester notification)
-      const finalizedResponse = await fetch(`http://localhost:5000/api/requisitions/finalized?email=${encodeURIComponent(currentUser.email)}&unseen=${!showAll}&user_id=${currentUser.id}`);
+      const finalizedResponse = await fetch(`${API_CONFIG.BASE_URL}/api/requisitions/finalized?email=${encodeURIComponent(currentUser.email)}&unseen=${!showAll}&user_id=${currentUser.id}`);
       const finalizedResult = await finalizedResponse.json();
       
       // Fetch rejected requisitions (for requester notification)
-      const rejectedResponse = await fetch(`http://localhost:5000/api/requisitions/rejected?email=${encodeURIComponent(currentUser.email)}&unseen=${!showAll}&user_id=${currentUser.id}`);
+      const rejectedResponse = await fetch(`${API_CONFIG.BASE_URL}/api/requisitions/rejected?email=${encodeURIComponent(currentUser.email)}&unseen=${!showAll}&user_id=${currentUser.id}`);
       const rejectedResult = await rejectedResponse.json();
       
       if (unsignedResult.success) {
@@ -108,7 +109,7 @@ const NotificationCenter = ({ isOpen, onClose, onRequisitionClick, currentUser, 
       console.log('Request body will be:', JSON.stringify({ user_id: currentUser.id }));
       
       // Send user_id in request body instead of using JWT
-      const response = await fetch(`http://localhost:5000/api/notifications/${reqId}/seen`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/notifications/${reqId}/seen`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

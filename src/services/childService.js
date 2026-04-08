@@ -1,7 +1,12 @@
 import axios from 'axios';
+import API_CONFIG from '../config/api';
 import { getCurrentUser, addUserInfoForLogging, getUserInfoForDelete } from '../utils/activityLogging';
 
 const API_URL = '/api/children';
+const BASE_URL = API_CONFIG.BASE_URL;
+
+// Helper function to build full API URL
+const getApiUrl = (endpoint) => `${BASE_URL}${endpoint}`;
 
 // Use regular axios without auth - permissions handled by backend session/cookies
 
@@ -10,27 +15,27 @@ const API_URL = '/api/children';
  */
 
 export const getChildren = async (filters = {}) => {
-  const response = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}`, { params: filters });
+  const response = await axios.get(`${BASE_URL}${API_URL}`, { params: filters });
   return response.data;
 };
 
 export const getChild = async (id) => {
-  const response = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}/${id}`);
+  const response = await axios.get(`${BASE_URL}${API_URL}/${id}`);
   return response.data;
 };
 
 export const createChild = async (data) => {
-  const response = await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}`, addUserInfoForLogging(data));
+  const response = await axios.post(`${BASE_URL}${API_URL}`, addUserInfoForLogging(data));
   return response.data;
 };
 
 export const updateChild = async (id, data) => {
-  const response = await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}/${id}`, addUserInfoForLogging(data));
+  const response = await axios.put(`${BASE_URL}${API_URL}/${id}`, addUserInfoForLogging(data));
   return response.data;
 };
 
 export const deleteChild = async (id) => {
-  const response = await axios.delete(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}/${id}`, {
+  const response = await axios.delete(getApiUrl(`${API_URL}/${id}`), {
     data: getUserInfoForDelete()
   });
   return response.data;
@@ -41,12 +46,12 @@ export const deleteChild = async (id) => {
  */
 
 export const getGuardians = async (childId) => {
-  const response = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}/${childId}/guardians`);
+  const response = await axios.get(getApiUrl(`${API_URL}/${childId}/guardians`));
   return response.data;
 };
 
 export const addGuardian = async (childId, data) => {
-  const response = await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}/${childId}/guardians`, data);
+  const response = await axios.post(getApiUrl(`${API_URL}/${childId}/guardians`), data);
   return response.data;
 };
 
@@ -55,12 +60,12 @@ export const addGuardian = async (childId, data) => {
  */
 
 export const getLegalDocuments = async (childId) => {
-  const response = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}/${childId}/legal-documents`);
+  const response = await axios.get(getApiUrl(`${API_URL}/${childId}/legal-documents`));
   return response.data;
 };
 
 export const addLegalDocument = async (childId, data) => {
-  const response = await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}/${childId}/legal-documents`, data);
+  const response = await axios.post(getApiUrl(`${API_URL}/${childId}/legal-documents`), data);
   return response.data;
 };
 
@@ -69,12 +74,12 @@ export const addLegalDocument = async (childId, data) => {
  */
 
 export const getMedicalRecords = async (childId) => {
-  const response = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}/${childId}/medical-records`);
+  const response = await axios.get(getApiUrl(`${API_URL}/${childId}/medical-records`));
   return response.data;
 };
 
 export const addMedicalRecord = async (childId, data) => {
-  const response = await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}/${childId}/medical-records`, data);
+  const response = await axios.post(getApiUrl(`${API_URL}/${childId}/medical-records`), data);
   return response.data;
 };
 
@@ -83,12 +88,12 @@ export const addMedicalRecord = async (childId, data) => {
  */
 
 export const getEducationRecords = async (childId) => {
-  const response = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}/${childId}/education-records`);
+  const response = await axios.get(getApiUrl(`${API_URL}/${childId}/education-records`));
   return response.data;
 };
 
 export const addEducationRecord = async (childId, data) => {
-  const response = await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}/${childId}/education-records`, data);
+  const response = await axios.post(getApiUrl(`${API_URL}/${childId}/education-records`), data);
   return response.data;
 };
 
@@ -97,12 +102,12 @@ export const addEducationRecord = async (childId, data) => {
  */
 
 export const getCaseHistory = async (childId) => {
-  const response = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}/${childId}/case-history`);
+  const response = await axios.get(getApiUrl(`${API_URL}/${childId}/case-history`));
   return response.data;
 };
 
 export const addCaseHistory = async (childId, data) => {
-  const response = await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}/${childId}/case-history`, data);
+  const response = await axios.post(getApiUrl(`${API_URL}/${childId}/case-history`), data);
   return response.data;
 };
 
@@ -113,7 +118,7 @@ export const addCaseHistory = async (childId, data) => {
 // Export all children as CSV
 export const exportChildrenCSV = async (filters = {}) => {
   const queryString = new URLSearchParams(filters).toString();
-  const url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}/export/csv${queryString ? `?${queryString}` : ''}`;
+  const url = getApiUrl(`${API_URL}/export/csv${queryString ? `?${queryString}` : ''}`);
   
   // Open in new tab for download
   window.open(url, '_blank');
@@ -122,7 +127,7 @@ export const exportChildrenCSV = async (filters = {}) => {
 // Export individual child profile
 export const exportChildProfile = async (id) => {
   try {
-    const response = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${API_URL}/${id}/export/pdf`);
+    const response = await axios.get(getApiUrl(`${API_URL}/${id}/export/pdf`));
     return response.data;
   } catch (error) {
     console.error('Error exporting child profile:', error);

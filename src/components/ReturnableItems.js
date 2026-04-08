@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_CONFIG from '../config/api';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft,
@@ -43,7 +44,7 @@ const ReturnableItems = ({ user, hasManagePermission = false }) => {
   // Fetch checked out items
   const fetchCheckedOutItems = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/inventory/returnable/checked-out');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inventory/returnable/checked-out`);
       const result = await response.json();
       if (result.success) {
         setCheckedOutItems(result.transactions);
@@ -58,7 +59,7 @@ const ReturnableItems = ({ user, hasManagePermission = false }) => {
   // Fetch transaction history
   const fetchTransactionHistory = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/inventory/returnable/history');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inventory/returnable/history`);
       const result = await response.json();
       if (result.success) {
         setTransactionHistory(result.transactions);
@@ -79,7 +80,7 @@ const ReturnableItems = ({ user, hasManagePermission = false }) => {
   const handleCheckout = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/inventory/returnable/checkout', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inventory/returnable/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(checkoutFormData)
@@ -114,7 +115,7 @@ const ReturnableItems = ({ user, hasManagePermission = false }) => {
     if (!selectedTransaction) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/inventory/returnable/${selectedTransaction.id}/return`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inventory/returnable/${selectedTransaction.id}/return`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(returnFormData)
@@ -144,7 +145,7 @@ const ReturnableItems = ({ user, hasManagePermission = false }) => {
     
     // Load returnable items for dropdown
     try {
-      const response = await fetch('http://localhost:5000/api/inventory?status=In%20Stock');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inventory?status=In%20Stock`);
       const result = await response.json();
       if (result.success) {
         const returnableItems = result.items.filter(item => item.is_returnable && item.quantity > 0);

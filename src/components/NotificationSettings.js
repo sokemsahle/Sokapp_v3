@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_CONFIG from '../config/api';
 import axios from 'axios';
 
 const NotificationSettings = ({ user, onClose }) => {
@@ -13,7 +14,7 @@ const NotificationSettings = ({ user, onClose }) => {
   const [successMessage, setSuccessMessage] = useState(null);
 
   // API base URL
-  const API_BASE_URL = 'http://localhost:5000/api';
+  const API_BASE_URL = `${API_CONFIG.BASE_URL}/api`;
 
   // Fetch settings on mount
   useEffect(() => {

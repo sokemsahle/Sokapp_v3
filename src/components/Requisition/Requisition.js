@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import './Requisition.css';
 import { getPrograms } from '../../services/programService';
+import API_CONFIG from '../../config/api';
 
 const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUser, userRoles: parentUserRoles }) => {
   // --- 1. State Definitions ---
@@ -87,7 +88,7 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
   
   const fetchUserRoles = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/user/requisition-roles?email=${encodeURIComponent(currentUser.email)}`);
+      const response = await fetch(API_CONFIG.getUrl(`/api/user/requisition-roles?email=${encodeURIComponent(currentUser.email)}`));
       const result = await response.json();
         
       if (result.success) {
@@ -119,8 +120,8 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
       // Fetch requisition data with user email and ID for access validation
       console.log('DEBUG: Fetching requisition data...');
       const apiUrl = currentUser?.email 
-        ? `http://localhost:5000/api/requisition/${id}?email=${encodeURIComponent(currentUser.email)}&userId=${encodeURIComponent(currentUser.id || '')}`
-        : `http://localhost:5000/api/requisition/${id}`;
+        ? API_CONFIG.getUrl(`/api/requisition/${id}?email=${encodeURIComponent(currentUser.email)}&userId=${encodeURIComponent(currentUser.id || '')}`)
+        : API_CONFIG.getUrl(`/api/requisition/${id}`);
       console.log('DEBUG: API URL:', apiUrl);
       const response = await fetch(apiUrl);
       
@@ -454,7 +455,7 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
       console.log('Pending signature type from state:', pendingSignatureType);
       console.log('Payload:', JSON.stringify(payload, null, 2));
       
-      const response = await fetch(`http://localhost:5000/api/requisition/${requisitionId}`, {
+      const response = await fetch(API_CONFIG.getUrl(`/api/requisition/${requisitionId}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -531,7 +532,7 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
       console.log('Signature type:', signatureType);
       console.log('Payload:', JSON.stringify(payload, null, 2));
       
-      const response = await fetch(`http://localhost:5000/api/requisition/${requisitionId}`, {
+      const response = await fetch(API_CONFIG.getUrl(`/api/requisition/${requisitionId}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -602,8 +603,8 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
     try {
       const isEditMode = mode === 'edit' && requisitionId;
       const url = isEditMode 
-        ? `http://localhost:5000/api/requisition/${requisitionId}`
-        : 'http://localhost:5000/api/requisition';
+        ? API_CONFIG.getUrl(`/api/requisition/${requisitionId}`)
+        : API_CONFIG.getUrl('/api/requisition');
       const method = isEditMode ? 'PUT' : 'POST';
 
       console.log('=== SUBMITTING REQUISITION ===');
@@ -684,7 +685,7 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
     setRejectionSubmitting(true);
     
     try {
-      const response = await fetch(`http://localhost:5000/api/requisition/${requisitionId}/reject`, {
+      const response = await fetch(API_CONFIG.getUrl(`/api/requisition/${requisitionId}/reject`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -725,7 +726,7 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
     }
     
     try {
-      const response = await fetch(`http://localhost:5000/api/requisition/${reqId}/send-notification`, {
+      const response = await fetch(API_CONFIG.getUrl(`/api/requisition/${reqId}/send-notification`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

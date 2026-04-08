@@ -4,6 +4,7 @@
   "description": "SOKAPP admin dashboard - React version",
   "private": true,
   "proxy": "http://localhost:5000",
+  "comment": "The 'proxy' setting is for DEVELOPMENT ONLY. It tells the React dev server to proxy API requests to the backend. In production, set REACT_APP_API_URL environment variable to your backend URL.",
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
