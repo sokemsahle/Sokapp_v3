@@ -27,3 +27,16 @@ node_modules/
 node_modules/
 .env
 build/
+
+# Docker
+.env.example.docker
+.dockerignore*
+*.pid
+*.sock
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db

@@ -1,0 +1,28 @@
+# Docker
+.env
+.env.local
+.env.production
+.dockerignore
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies
+node_modules/
+
+# Build
+build/
+
+# Backend specific
+Backend/.qoder/
+Backend/backend.log
+
+# Database dumps
+*.sql
+database/dumps/
