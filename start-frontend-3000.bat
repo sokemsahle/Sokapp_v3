@@ -25,6 +25,7 @@ if %errorlevel% equ 0 (
 )
 
 REM Set environment variables
+set HOST=localhost
 set PORT=3000
 set REACT_APP_API_URL=http://localhost:5000
 set BROWSER=chrome

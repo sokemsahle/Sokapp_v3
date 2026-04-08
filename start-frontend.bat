@@ -15,7 +15,8 @@ echo Frontend will run on: http://localhost:3000
 echo Backend API should be running on: http://localhost:5000
 echo.
 
-REM Set PORT environment variable for React dev server (Windows syntax)
+REM Set environment variables for React dev server (Windows syntax)
+set HOST=localhost
 set PORT=3000
 set REACT_APP_API_URL=http://localhost:5000
 
