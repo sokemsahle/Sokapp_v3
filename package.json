@@ -34,8 +34,8 @@
     "xlsx": "^0.18.5"
   },
   "scripts": {
-    "start": "HOST=localhost PORT=3000 react-scripts start",
-    "start:3000": "HOST=localhost PORT=3000 react-scripts start",
+    "start": "HOST=0.0.0.0 PORT=3000 DANGEROUSLY_DISABLE_HOST_CHECK=true react-scripts start",
+    "start:3000": "HOST=0.0.0.0 PORT=3000 DANGEROUSLY_DISABLE_HOST_CHECK=true react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
