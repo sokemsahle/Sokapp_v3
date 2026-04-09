@@ -43,7 +43,8 @@ const dbConfig = {
     user: process.env.DB_USER || 'root',        // Replace with your database username
     password: process.env.DB_PASSWORD || '',        // Replace with your database password
     database: process.env.DB_NAME || 'sokapptest',  // Using new sokapptest database
-    connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 10
+    connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 10,
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined
 };
 // Routes inventory
 const inventoryRoutes = require('./routes/inventory.routes');
