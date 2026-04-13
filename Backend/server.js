@@ -2585,7 +2585,7 @@ app.post('/api/users', async (req, res) => {
             const invitationLink = `${frontendUrl}/accept-invitation?email=${encodeURIComponent(email)}&token=${plainToken}`;
             
             const brevoResponse = await axios.post('https://api.brevo.com/v3/smtp/email', {
-                sender: { email: process.env.EMAIL_FROM || 'no-reply@yoursite.com' },
+                sender: { email: process.env.EMAIL_FROM || process.env.BREVO_SENDER_EMAIL || 'no-reply@yoursite.com' },
                 to: [{ email: email }],
                 subject: 'SOKAPP - Invitation to Join',
                 htmlContent: `
@@ -2787,7 +2787,7 @@ app.post('/api/forgot-password', async (req, res) => {
             const resetLink = `${frontendUrl}/reset-password?token=${plainToken}&email=${encodeURIComponent(email)}`;
             
             const brevoResponse = await axios.post('https://api.brevo.com/v3/smtp/email', {
-                sender: { email: process.env.EMAIL_FROM || 'no-reply@yoursite.com' },
+                sender: { email: process.env.EMAIL_FROM || process.env.BREVO_SENDER_EMAIL || 'no-reply@yoursite.com' },
                 to: [{ email: email }],
                 subject: 'SOKAPP - Password Reset Request',
                 htmlContent: `
@@ -3984,7 +3984,7 @@ const sendEmailNotification = async (toEmail, subject, htmlContent) => {
         
         const emailData = {
             sender: {
-                email: process.env.EMAIL_FROM || 'noreply@yoursite.com',
+                email: process.env.EMAIL_FROM || process.env.BREVO_SENDER_EMAIL || 'noreply@yoursite.com',
                 name: 'SOKAPP System'
             },
             to: [

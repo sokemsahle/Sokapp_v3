@@ -41,6 +41,8 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
   const [rejectionNote, setRejectionNote] = useState(''); // Store rejection note
   const [rejectionSubmitting, setRejectionSubmitting] = useState(false); // Track rejection submission
   const [pendingSignatureType, setPendingSignatureType] = useState(null); // Track which signature needs to be saved
+  const [showSignatureModal, setShowSignatureModal] = useState(false); // Control signature modal visibility
+  const [currentSignatureType, setCurrentSignatureType] = useState(null); // Track which signature type is being captured in modal
   
   console.log('DEBUG: Requisition component rendered with:', { mode, requisitionId, isOpen, currentUser });
   
@@ -259,33 +261,61 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
 
   // --- 3. Signature Functions ---
   
-  // Helper function to get pen color based on theme
-  const getPenColor = () => {
-    if (typeof window !== 'undefined' && document.body.classList.contains('dark')) {
-      return '#ffffff';
-    }
-    return '#000000';
+  // Open signature modal
+  const openSignatureModal = (signatureType) => {
+    setCurrentSignatureType(signatureType);
+    setShowSignatureModal(true);
+    
+    // Clear the canvas when opening modal
+    setTimeout(() => {
+      let padToUse = sigPad;
+      if (signatureType === 'reviewed') {
+        padToUse = reviewSigPad;
+      } else if (signatureType === 'approved') {
+        padToUse = approveSigPad;
+      } else if (signatureType === 'authorized') {
+        padToUse = authorizeSigPad;
+      }
+      
+      if (padToUse.current) {
+        padToUse.current.clear();
+      }
+    }, 100);
   };
   
-  // Helper function to get canvas background color
+  // Close signature modal
+  const closeSignatureModal = () => {
+    setShowSignatureModal(false);
+    setCurrentSignatureType(null);
+  };
+  
+  // Always use black pen on white background for consistent signature storage
+  // CSS invert() filter will handle dark mode display without affecting saved data
+  const getPenColor = () => {
+    return '#000000'; // Always black
+  };
+  
   const getCanvasBgColor = () => {
-    if (typeof window !== 'undefined' && document.body.classList.contains('dark')) {
-      return '#1a1a1a';
-    }
-    return '#ffffff';
+    return '#ffffff'; // Always white
   };
   
   // Canvas configuration for accurate drawing
-  const getCanvasProps = (signatureType) => ({
-    className: 'sigCanvas',
-    style: { 
-      backgroundColor: getCanvasBgColor(),
-      width: '100%',
-      height: '150px'
-    },
-    width: 400,
-    height: 150
-  });
+  const getCanvasProps = (signatureType) => {
+    const isDarkMode = typeof window !== 'undefined' && document.body.classList.contains('dark');
+    
+    return {
+      className: 'sigCanvas',
+      style: { 
+        backgroundColor: '#ffffff', // Always white background
+        filter: isDarkMode ? 'invert(1)' : 'none' // Invert colors in dark mode
+      },
+      canvasProps: {
+        width: 600,
+        height: 200
+      }
+    };
+  };
+  
   
   const clearSignature = (signatureType) => {
     // Determine which pad to use based on signature type
@@ -327,54 +357,60 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
     
     console.log('padToUse ref:', padToUse);
     console.log('padToUse.current:', padToUse.current);
-      
-    if (padToUse.current && !padToUse.current.isEmpty()) {
-      console.log('✓ Canvas is NOT empty, proceeding...');
-      // FIX: Replace getTrimmedCanvas() with getCanvas() 
-      // This avoids the "trim_canvas is not a function" error
-      const canvas = padToUse.current.getCanvas();
-      const dataURL = canvas.toDataURL('image/png');
-      
-      console.log('✓ Generated dataURL, length:', dataURL ? dataURL.length : 0);
+    
+    // Add a small delay to ensure canvas is rendered
+    setTimeout(() => {
+      if (padToUse.current && !padToUse.current.isEmpty()) {
+        console.log('✓ Canvas is NOT empty, proceeding...');
+        // FIX: Replace getTrimmedCanvas() with getCanvas() 
+        // This avoids the "trim_canvas is not a function" error
+        const canvas = padToUse.current.getCanvas();
+        const dataURL = canvas.toDataURL('image/png');
         
-      if (signatureType === 'approved') {
-        console.log('Setting approvedSignature with length:', dataURL.length);
-        setApprovedSignature(dataURL);
-        // Force a log right after setting
-        setTimeout(() => {
-          console.log('>>> IMMEDIATE CHECK after setApprovedSignature:', dataURL ? dataURL.substring(0, 50) + '...' : 'NULL');
-        }, 0);
-      } else if (signatureType === 'authorized') {
-        console.log('Setting authorizedSignature...');
-        setAuthorizedSignature(dataURL);
-      } else if (signatureType === 'reviewed') {
-        console.log('Setting reviewedSignature...');
-        setReviewedSignature(dataURL);
+        console.log('✓ Generated dataURL, length:', dataURL ? dataURL.length : 0);
+          
+        if (signatureType === 'approved') {
+          console.log('Setting approvedSignature with length:', dataURL.length);
+          setApprovedSignature(dataURL);
+          // Force a log right after setting
+          setTimeout(() => {
+            console.log('>>> IMMEDIATE CHECK after setApprovedSignature:', dataURL ? dataURL.substring(0, 50) + '...' : 'NULL');
+          }, 0);
+        } else if (signatureType === 'authorized') {
+          console.log('Setting authorizedSignature...');
+          setAuthorizedSignature(dataURL);
+        } else if (signatureType === 'reviewed') {
+          console.log('Setting reviewedSignature...');
+          setReviewedSignature(dataURL);
+        } else {
+          console.log('Setting requestor signature...');
+          setSignature(dataURL);
+        }
+          
+        setIsSigning(false);
+        
+        // Track which signature type was just added for the "Save Signature" button
+        setPendingSignatureType(signatureType);
+        console.log('Set pendingSignatureType to:', signatureType);
+        console.log('Current state values will update on next render...');
+        
+        // Close the modal after saving
+        closeSignatureModal();
+        
+        // Auto-save in view mode - PASS THE SIGNATURE DATA DIRECTLY TO AVOID TIMING ISSUES
+        if (mode === 'view' && requisitionId) {
+          console.log('Auto-saving in view mode with signature data...');
+          handleSignatureSubmitWithDirectData(signatureType, dataURL);
+        }
       } else {
-        console.log('Setting requestor signature...');
-        setSignature(dataURL);
+        console.error('✗ Canvas is EMPTY or padToUse.current is null!');
+        console.error('padToUse.current:', padToUse.current);
+        if (padToUse.current) {
+          console.error('Canvas isEmpty():', padToUse.current.isEmpty());
+        }
+        alert("Please provide a signature first.");
       }
-        
-      setIsSigning(false);
-      
-      // Track which signature type was just added for the "Save Signature" button
-      setPendingSignatureType(signatureType);
-      console.log('Set pendingSignatureType to:', signatureType);
-      console.log('Current state values will update on next render...');
-      
-      // Auto-save in view mode - PASS THE SIGNATURE DATA DIRECTLY TO AVOID TIMING ISSUES
-      if (mode === 'view' && requisitionId) {
-        console.log('Auto-saving in view mode with signature data...');
-        handleSignatureSubmitWithDirectData(signatureType, dataURL);
-      }
-    } else {
-      console.error('✗ Canvas is EMPTY or padToUse.current is null!');
-      console.error('padToUse.current:', padToUse.current);
-      if (padToUse.current) {
-        console.error('Canvas isEmpty():', padToUse.current.isEmpty());
-      }
-      alert("Please provide a signature first.");
-    }
+    }, 50);
   };
   
   // --- 4. Save Signature Changes in View Mode ---
@@ -1015,7 +1051,7 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                     <button 
                       className="btn-sign-trigger"
                       onClick={() => {
-                        setIsSigning('requestor');
+                        openSignatureModal('requestor');
                       }}
                     >
                       <i className='bx bx-pen'></i> Sign Request
@@ -1027,7 +1063,7 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
               ) : (
                 <>
                   {!isSigning && !signature ? (
-                    <button className="btn-sign-trigger" onClick={() => setIsSigning('requestor')}>
+                    <button className="btn-sign-trigger" onClick={() => openSignatureModal('requestor')}>
                       <i className='bx bx-pen'></i> Click to Sign
                     </button>
                   ) : isSigning === 'requestor' ? (
@@ -1087,7 +1123,7 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                       className="btn-sign-trigger"
                       onClick={() => {
                         if (formData.reviewedBy) {
-                          setIsSigning('reviewed');
+                          openSignatureModal('reviewed');
                         } else {
                           alert('Please enter the reviewer name first');
                         }
@@ -1127,7 +1163,7 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                         }
                         
                         if (formData.reviewedBy) {
-                          setIsSigning('reviewed');
+                          openSignatureModal('reviewed');
                         } else {
                           alert('Please enter the reviewer name first');
                         }
@@ -1182,7 +1218,7 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                       className="btn-sign-trigger"
                       onClick={() => {
                         if (formData.approvedBy) {
-                          setIsSigning('approved');
+                          openSignatureModal('approved');
                         } else {
                           alert('Please enter the approver name first');
                         }
@@ -1222,7 +1258,7 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                         }
                         
                         if (formData.approvedBy) {
-                          setIsSigning('approved');
+                          openSignatureModal('approved');
                         } else {
                           alert('Please enter the approver name first');
                         }
@@ -1277,7 +1313,7 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                       className="btn-sign-trigger"
                       onClick={() => {
                         if (formData.authorizedBy) {
-                          setIsSigning('authorized');
+                          openSignatureModal('authorized');
                         } else {
                           alert('Please enter the authorizer name first');
                         }
@@ -1317,7 +1353,7 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                         }
                         
                         if (formData.authorizedBy) {
-                          setIsSigning('authorized');
+                          openSignatureModal('authorized');
                         } else {
                           alert('Please enter the authorizer name first');
                         }
@@ -1480,6 +1516,57 @@ const Requisition = ({ isOpen, mode = 'create', requisitionId, onBack, currentUs
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Signature Modal */}
+      {showSignatureModal && (
+        <div className="signature-modal-overlay" onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            closeSignatureModal();
+          }
+        }}>
+          <div className="signature-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="signature-modal-header">
+              <h3>
+                <i className='bx bx-pen'></i>
+                {currentSignatureType === 'requestor' && 'Sign as Requestor'}
+                {currentSignatureType === 'reviewed' && 'Sign Review'}
+                {currentSignatureType === 'approved' && 'Sign Approval'}
+                {currentSignatureType === 'authorized' && 'Sign Authorization'}
+              </h3>
+              <button className="signature-modal-close" onClick={closeSignatureModal}>
+                <i className='bx bx-x'></i>
+              </button>
+            </div>
+            
+            <div className="signature-modal-body">
+              <div className="signature-modal-canvas-container">
+                <SignatureCanvas 
+                  ref={currentSignatureType === 'reviewed' ? reviewSigPad : 
+                       currentSignatureType === 'approved' ? approveSigPad : 
+                       currentSignatureType === 'authorized' ? authorizeSigPad : sigPad}
+                  penColor={getPenColor()}
+                  canvasProps={getCanvasProps(currentSignatureType)}
+                />
+              </div>
+              
+              <div className="signature-modal-controls">
+                <button 
+                  className="btn-sig-clear" 
+                  onClick={() => clearSignature(currentSignatureType)}
+                >
+                  <i className='bx bx-eraser'></i> Clear
+                </button>
+                <button 
+                  className="btn-sig-save" 
+                  onClick={() => saveSignature(currentSignatureType)}
+                >
+                  <i className='bx bx-check'></i> Save Signature
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -130,7 +130,7 @@ router.post('/request', async (req, res) => {
                 const emailData = {
                     sender: { 
                         name: "Inventory System", 
-                        email: process.env.BREVO_SENDER_EMAIL || "noreply@sokapp.online" 
+                        email: process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_FROM || "noreply@sokapp.online" 
                     },
                     to: [{ email: manager.email, name: manager.full_name }],
                     subject: `📦 New Inventory Request #${requestId} - ${urgency.toUpperCase()}`,
@@ -411,7 +411,7 @@ router.put('/request/:id/approve', async (req, res) => {
                 {
                     sender: { 
                         name: "Inventory System", 
-                        email: "noreply@sokapp.online" 
+                        email: process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_FROM || "noreply@sokapp.online" 
                     },
                     to: [{ email: request.requestor_email, name: request.requestor_name }],
                     subject: isReturnable 
@@ -532,7 +532,7 @@ router.put('/request/:id/reject', async (req, res) => {
             const emailData = {
                 sender: { 
                     name: "Inventory System", 
-                    email: "noreply@sokapp.online" 
+                    email: process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_FROM || "noreply@sokapp.online" 
                 },
                 to: [{ email: request.requestor_email, name: request.requestor_name }],
                 subject: `❌ Inventory Request #${id} Rejected`,

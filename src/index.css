@@ -35,13 +35,13 @@ th {
 }
 
 /* Set default zoom level to 75% */
+
 #root {
     transform: scale(0.80);
     transform-origin: top left;
-    width: 133.33vw; /* 100 / 0.75 = 133.33 */
-    height: 133.33vh; /* 100 / 0.75 = 133.33 */
+    width: 125vw; /* 100 / 0.75 = 133.33 */
+    height: 125vh; /* 100 / 0.75 = 133.33 */
 }
-
 body{
     font-family: var(--font-family);
 }
